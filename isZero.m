@@ -8,7 +8,7 @@ function bin = isZero(M,ZERO)
 %
 %   See also zeroFPError eps
 %
-%   (c) M. Kutzer 13May2015, USNA
+%   M. Kutzer 13May2015, USNA
 
 % Updates
 %   22Jan2015 - Updated to speed up checking matrices

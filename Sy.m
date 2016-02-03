@@ -11,7 +11,7 @@ function G = Sy(s,dim)
 %
 %   See also Sx Sz Shx Shy Shxy Shxz Shyz vee wedge
 %
-%   (c) M. Kutzer 03Dec2014, USNA
+%   M. Kutzer 03Dec2014, USNA
 
 if nargin == 1
     dim = 3;

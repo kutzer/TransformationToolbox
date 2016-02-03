@@ -5,7 +5,7 @@ function G = Sz(s)
 %
 %   See also Sx Sy Shx Shy Shxy Shxz Shyz vee wedge
 %
-%   (c) M. Kutzer 03Dec2014, USNA
+%   M. Kutzer 03Dec2014, USNA
 
 % 3D Scaling Transformation
 G = [1, 0, 0, 0;...

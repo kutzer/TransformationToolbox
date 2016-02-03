@@ -5,7 +5,7 @@ function G = Shxz(S)
 %
 %   See also Sx Sy Sz Shx Shy Shxy Shyz vee wedge
 %
-%   (c) M. Kutzer 03Dec2014, USNA
+%   M. Kutzer 03Dec2014, USNA
 
 G = [1, S(1), 0, 0;...
      0,    1, 0, 0;...

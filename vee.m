@@ -1,28 +1,41 @@
 function v = vee(M,options)
-%vee converts a 3x3 or 2x2 skew-symmetric matrix into a vector
-%   vee(M) converts a 3x3 skew-symmetric matrix "M" into a 3x1 vector "v", 
-%   or a 2x2 skew-symmetric matrix "M" into a scalar "v".
+%vee converts an NxN skew-symmetric matrix into a vector defined by the
+%basis elements of so(N) (the Lie algebra associated with SO(n), sometimes 
+%referred to as "little so"). 
+%   v = vee(M) converts an NxN skew-symmetric matrix "M" into a Mx1 vector 
+%   "v".
+%       2 x 2 matrix -> $v \in \mathbb{R}^1$ (2D rotations)
+%       3 x 3 matrix -> $v \in \mathbb{R}^3$ (3D rotations)
+%       4 x 4 matrix -> $v \in \mathbb{R}^6$
+%       5 x 5 matrix -> $v \in \mathbb{R}^10$
+%       etc.
 %
-%   See also wedge isSkewSymmetric
+%   v = vee(___,'fast') converts without checking the NxN matrix for 
+%   skew-symmetry. 
 %
-%   (c) M. Kutzer 10Oct2014, USNA
+%   See also wedge soBasis isSkewSymmetric
+%
+%   M. Kutzer 10Oct2014, USNA
+
+% Updates
+%   03Feb2016 - Documentation update and added check for isSkewSymmetric.m
 
 %% Default options
-%TODO - document "options" 
 if nargin < 2
     options = '';
 end
-
-%% Check for custom functions
-%TODO - check for isSkewSymmetric.m
 
 %% Check M
 switch lower(options)
     case 'fast'
         % Do not check for skew symmetry
     otherwise
-        if ~isSkewSymmetric(M)
-            error('"M" must be skew-symmetric.');
+        if exist('isSkewSymmetric','file')
+            if ~isSkewSymmetric(M)
+                error('"M" must be skew-symmetric.');
+            end
+        else
+            warning('The function "isSkewSymmetric" was not found. Skipping skew-symmetry check.');
         end
 end
 

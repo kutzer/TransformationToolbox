@@ -8,7 +8,7 @@ function [bin,kids] = isTriad(h)
 %
 %   See also hgtransform triad showTriad
 %
-%   (c) M. Kutzer 13May2015, USNA
+%   M. Kutzer 13May2015, USNA
 
 bin = true(size(h));
 kids = cell(size(h));

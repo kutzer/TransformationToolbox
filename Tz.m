@@ -5,7 +5,7 @@ function H = Tz(d)
 %
 %   See also Rx Ry Rz Tx Ty
 %
-%   (c) M. Kutzer 20Oct2014, USNA
+%   M. Kutzer 20Oct2014, USNA
 
 % Format enables use of symbolic variables
 

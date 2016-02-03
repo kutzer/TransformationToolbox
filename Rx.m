@@ -6,7 +6,7 @@ function H = Rx(theta)
 %
 %   See also Ry Rz Tx Ty Tz vee wedge
 %
-%   (c) M. Kutzer 20Oct2014, USNA
+%   M. Kutzer 20Oct2014, USNA
 
 % Format enables use of symbolic variables
 H(2,2) = cos(theta);

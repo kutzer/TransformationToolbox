@@ -11,7 +11,7 @@ function H = Tx(d,dim)
 %
 %   See also Rx Ry Rz Ty Tz
 %
-%   (c) M. Kutzer 20Oct2014, USNA
+%   M. Kutzer 20Oct2014, USNA
 
 % Format enables use of symbolic variables
 

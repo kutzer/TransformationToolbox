@@ -40,9 +40,10 @@ function h = triad(varargin)
 %           drawnow
 %       end
 %
-%   See also hgtransform showTriad hideTriad
+%   See also hgtransform showTriad hideTriad showTriadLabels
+%       hideTriadLabels setTriad getTriad
 %
-%   (c) M. Kutzer 20Oct2014, USNA
+%   M. Kutzer 20Oct2014, USNA
 
 %Updates
 %   19Dec2014 - Updated parent definition and extended documentation
@@ -50,7 +51,8 @@ function h = triad(varargin)
 %   13May2015 - Updated to check for valid parent property
 %   16July2015 - Updated to include axis labels
 %   22Jan2016 - Updated to correct "visible" property error
-%   
+%   03Feb2016 - Updated "see also"
+
 % TODO - create a triad class
 
 %% Find or default parent

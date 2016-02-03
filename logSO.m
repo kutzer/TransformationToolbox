@@ -3,7 +3,7 @@ function r = logSO(R)
 
 r = logm(R);
 if ~isreal(r)
-    R3 = R^(1/3);
-    r3 = logm(R3);
-    r = 3*r3;
+    [Axis,Angle] = SOtoAxisAngle(R);
+    v = Axis*Angle;
+    r = wedge(v);
 end

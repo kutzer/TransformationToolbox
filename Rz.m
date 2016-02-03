@@ -15,7 +15,7 @@ function H = Rz(theta,dim)
 %
 %   See also Rx Ry Tx Ty Tz vee wedge
 %
-%   (c) M. Kutzer 20Oct2014, USNA
+%   M. Kutzer 20Oct2014, USNA
 
 % Format enables use of symbolic variables
 if nargin == 1

@@ -8,7 +8,7 @@ function H = zeroFPError(H,ZERO)
 %
 %   See also sym/simplify sym/vpa eps isZero
 %
-%   (c) M. Kutzer 27Oct2014, USNA
+%   M. Kutzer 27Oct2014, USNA
 
 %Updates
 %   11Sep2014 - Remove extra VPA call.

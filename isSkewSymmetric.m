@@ -3,7 +3,7 @@ function bin= isSkewSymmetric(M)
 %   isSkewSymmetric(M) checks nxn matrix "M" for skew-symmetry. If the M is
 %   skew-symmetric, this function returns "1", "0" is returned otherwise.
 %
-%   (c) M. Kutzer 10Oct2014, USNA
+%   M. Kutzer 10Oct2014, USNA
 
 %% Check dimensions of M
 if size(M,1) ~= size(M,2) || ~ismatrix(M)

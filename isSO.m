@@ -9,7 +9,7 @@ function [bin,msg] = isSO(M)
 %   
 %   See also isSE
 %
-%   (c) M. Kutzer 12May2015, USNA
+%   M. Kutzer 12May2015, USNA
 
 %% Check dimensions
 d = size(M);
