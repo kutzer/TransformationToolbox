@@ -52,8 +52,11 @@ function h = triad(varargin)
 %   16July2015 - Updated to include axis labels
 %   22Jan2016 - Updated to correct "visible" property error
 %   03Feb2016 - Updated "see also"
+%   27Feb2016 - Updated to include TODO note
 
 % TODO - create a triad class
+%   Note: This is problematic as we use "triads" and hgtransforms
+%   interchangeably in code.
 
 %% Find or default parent
 idx = find( strcmpi('parent',varargin) );

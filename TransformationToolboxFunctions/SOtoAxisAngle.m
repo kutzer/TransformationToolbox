@@ -12,7 +12,7 @@ function [Axis,Angle] = SOtoAxisAngle(R)
 %   02Feb2016 - Updated to include n-dimensional axis/angle
 
 % TODO - update documentation to reflect n-dimensional axis/angle
-% TODO - address negative eigenvalue issues of logm
+% TODO - address negative eigenvalue issues of logm for larger than 3x3
 
 %% Check inputs
 narginchk(1,1);

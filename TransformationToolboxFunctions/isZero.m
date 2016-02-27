@@ -11,7 +11,7 @@ function bin = isZero(M,ZERO)
 %   M. Kutzer 13May2015, USNA
 
 % Updates
-%   22Jan2015 - Updated to speed up checking matrices
+%   22Jan2016 - Updated to speed up checking matrices
 
 %% Set default zero
 if nargin < 2

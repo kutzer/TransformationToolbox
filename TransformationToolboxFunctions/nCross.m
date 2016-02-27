@@ -1,7 +1,13 @@
 function v = nCross(varargin)
 % NCROSS calculates the n-dimensional cross product following the the
 % definition of the wedge product (exterior algebra).
+%
+%   M. Kutzer 12Mar2015, USNA
 
+% TODO - check number of inputs
+% TODO - update documentation
+
+%% Define vectors for cross product
 N = numel(varargin);
 n = numel(varargin{1});
 

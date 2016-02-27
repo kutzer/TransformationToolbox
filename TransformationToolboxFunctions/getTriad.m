@@ -16,3 +16,5 @@ function getTriad(h,varargin)
 %                     This property hides the visualization, not the
 %                       hgtransform object.
 %TODO - create get function for triads
+
+warning('This function is still a work in progress.');

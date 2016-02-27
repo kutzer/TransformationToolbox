@@ -22,6 +22,10 @@ function H = smoothSE3(varargin)
 %
 %   M. Kutzer 31Dec2014, USNA
 
+% Updates
+%   27Feb2016 - Replaced logm with logSO to compensate for negative
+%   eigenvalue limitation of logm
+
 plotsOn = false;  % useful for debugging and visualizing output
 
 %% Check for non-standard functions
@@ -67,7 +71,7 @@ v = zeros(3,n);
 x = zeros(3,n);
 for i = 1:n
     R = H{i}(1:3,1:3);
-    v(:,i) = real( vee( logm(R) ) );
+    v(:,i) = real( vee( logSO(R) ) );
     x(:,i) = real( H{i}(1:3,4) );
 end
 

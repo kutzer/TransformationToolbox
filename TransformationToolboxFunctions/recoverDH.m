@@ -1,4 +1,8 @@
 function DH = recoverDH(H)
+% RECOVERDH calculate the parameters to populate a single row of a DH table
+% given a 3D transformation. 
+%
+%   M. Kutzer 13Nov2014, USNA
 
 ZERO = 1e-15;
 %% Calculate z-rotation

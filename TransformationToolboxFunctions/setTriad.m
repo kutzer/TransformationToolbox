@@ -21,7 +21,7 @@ function setTriad(h,varargin)
 %
 %   See also triad isTriad getTriad showTriad hideTriad 
 %
-%   (c) M. Kutzer 19Dec2014, USNA
+%   M. Kutzer 19Dec2014, USNA
 
 
 %% Get triad axes

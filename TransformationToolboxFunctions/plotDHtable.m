@@ -11,7 +11,7 @@ function DH_obj = plotDHtable(varargin)
 %
 %   See also DHtableToFkin DH
 %   
-%   (c) M. Kutzer 16July2015, USNA
+%   M. Kutzer 16July2015, USNA
 
 axs = [];
 linkLbls = true;

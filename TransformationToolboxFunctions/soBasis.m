@@ -12,7 +12,8 @@ function e = soBasis(n)
 %   M. Kutzer 26Feb2015, USNA
 
 %TODO - cleanup and comment
-%%
+
+%% 
 m = n*(n-1)/2;  % total number of basis elements
 
 EE = reshape((n^2):-1:1,n,n)';

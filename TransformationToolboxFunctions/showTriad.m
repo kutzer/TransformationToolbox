@@ -15,7 +15,7 @@ function h = showTriad(h)
 %               documentation
 %   13Aug2015 - Updated to include triad labels
 
-%%
+%% Show triad
 axs_tags = {'X-Axis','Y-Axis','Z-Axis'};
 for i = 1:numel(h)
     kids = get(h(i),'Children');

@@ -8,7 +8,7 @@ function h = hideTriad(h)
 %
 %   See also hgtransform triad showTriad showTriadLabels hideTriadLabels
 %
-%   (c) M. Kutzer 19Dec2014, USNA
+%   M. Kutzer 19Dec2014, USNA
 
 %Updates
 %   13May2015 - Updated definition for multiple triads and extended 

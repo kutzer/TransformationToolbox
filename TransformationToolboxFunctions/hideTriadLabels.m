@@ -8,7 +8,7 @@ function h = hideTriadLabels(h)
 %
 %   See also hgtransform triad hideTriad showTriad showTriadLabels 
 %
-%   (c) M. Kutzer 13Aug2015, USNA
+%   M. Kutzer 13Aug2015, USNA
 
 %%
 axs_lbls = {'X-Label','Y-Label','Z-Label'};

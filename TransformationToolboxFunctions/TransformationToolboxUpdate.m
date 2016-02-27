@@ -7,16 +7,26 @@ function TransformationToolboxUpdate
 % TODO - Find a location for "TransformationToolbox Example SCRIPTS"
 % TODO - update function for general operation
 
+ToolboxUpdate('Transformation');
+
+end
+
+function ToolboxUpdate(toolboxName)
+
+%% Setup functions
+ToolboxVer = str2func( sprintf('%sToolboxVer',toolboxName) );
+installToolbox = str2func( sprintf('install%sToolbox',toolboxName) );
+
 %% Check current version
-A = TransformationToolboxVer;
+A = ToolboxVer;
 
 %% Setup temporary file directory
-fprintf('Downloading the Transformation Toolbox...');
-tmpFolder = 'TransformationToolbox';
+fprintf('Downloading the %s Toolbox...',toolboxName);
+tmpFolder = sprintf('%sToolbox',toolboxName);
 pname = fullfile(tempdir,tmpFolder);
 
 %% Download and unzip toolbox (GitHub)
-url = 'https://github.com/kutzer/TransformationToolbox/archive/master.zip';
+url = sprintf('https://github.com/kutzer/%sToolbox/archive/master.zip',toolboxName);
 try
     fnames = unzip(url,pname);
     fprintf('SUCCESS\n');
@@ -27,11 +37,11 @@ end
 
 %% Check for successful download
 if ~confirm
-    error('Failed to download updated version of Transformation Toolbox.');
+    error('InstallToolbox:FailedDownload','Failed to download updated version of %s Toolbox.',toolboxName);
 end
 
 %% Find base directory
-install_pos = strfind(fnames,'installTransformationToolbox.m');
+install_pos = strfind(fnames, sprintf('install%sToolbox.m',toolboxName) );
 sIdx = cell2mat( install_pos );
 cIdx = ~cell2mat( cellfun(@isempty,install_pos,'UniformOutput',0) );
 
@@ -42,7 +52,7 @@ cpath = cd;
 cd(pname_star);
 
 %% Install ScorBot Toolbox
-installTransformationToolbox(true);
+installToolbox(true);
 
 %% Move back to current directory and remove temp file
 cd(cpath);
