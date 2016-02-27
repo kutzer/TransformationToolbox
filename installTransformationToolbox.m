@@ -54,6 +54,7 @@ if isToolbox == 7
     % Replace existing or cancel installation
     switch choice
         case 'Yes'
+            rmpath(toolboxRoot);
             [isRemoved, msg, msgID] = rmdir(toolboxRoot,'s');
             if isRemoved
                 fprintf('Previous version of Transformation Toolbox removed successfully.\n');
