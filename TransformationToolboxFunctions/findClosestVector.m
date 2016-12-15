@@ -1,4 +1,4 @@
-function [v_close,v_sort] = findClosestVector(v_all,v)
+function [v_close,v_sort,nv_sort] = findClosestVector(v_all,v)
 % FINDCLOSESTVECTOR finds the vector in a set closest to a reference 
 % vector. Closest is defined in terms of the Euclidean norm.
 %   v_close = FINDCLOSESTVECTOR(v_all,v) finds the vector in a set (v_all)
@@ -9,9 +9,12 @@ function [v_close,v_sort] = findClosestVector(v_all,v)
 %       v       - Nx1 vector
 %       v_close - Nx1 vector closest to v (per the Euclidean norm)
 %
-%   [v_close, v_sort] = findClosestVector(v_all,v) returns the closest
+%   [v_close, v_sort] = FINDCLOSESTVECTOR(v_all,v) returns the closest
 %   vector and all vectors from the original set, sorted from closest to
 %   furthest. 
+%
+%   [v_close,v_sort,nv_sort] = FINDCLOSESTVECTOR(v_all,v) also returns the
+%   sorted set of difference norms.
 %
 %   M. Kutzer, 15Dec2016, USNA
 
@@ -39,7 +42,7 @@ end
 %% Find closest solution
 dv = bsxfun(@minus,v_all,v);    % Find difference
 nv = sqrt( sum(dv.^2,1) );      % Find norm of difference
-[~,idx] = sort(nv);
+[nv_sort,idx] = sort(nv);
 
 v_close = v_all(:,idx(1));
 v_sort  = v_all(:,idx);
