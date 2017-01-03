@@ -1,23 +1,40 @@
-function H = pointsToSE3(q,p)
+function [H_q2p,err] = pointsToSE3(q,p)
 % POINTSTOSE3 finds the best fit rigid body between two sets of point
 % correspondences.
 %
-%   POINTSTOSE3(q,p) This function finds a rigid body motion that best 
-%   moves p to q assuming a correspondence between each vector contained 
-%   in p and q (i.e. q(:,i) <--> p(:,i)).
+%   H_q2p = POINTSTOSE3(q,p) This function finds a rigid body  
+%   transformation that best relates, in a least squares sense, Frame Q 
+%   (the frame to which all points in "q" are referenced) to Frame P (the 
+%   frame to which all points in "p" are referenced). The resultant 
+%   transformation can be used as follows: 
 %
-%   p = H(1:3,:)*[q;ones(1,N)]
+%   Given two sets of N corresponding points:
+%       p = [p_1,p_2,p_3...p_N], p_i - 3x1 
+%       q = [q_1,q_2,q_3...q_N], q_i - 3x1
 %
-%   p = [p_1,p_2,p_3...p_N], p_i - 3x1 
-%   q = [q_1,q_2,q_3...q_N], q_i - 3x1
+%   Approximations can be calculated:
+%       p_est = H_q2p(1:3,:)*[q; ones(1,N)]
+%       
+%       H_p2q = invSE(H_q2p);
+%       q_est = H_p2q(1:3,:)*[p; ones(1,N)]
+%
+%   This calculation assumes that there is a correspondence between each 
+%   point contained in q and p (i.e. q(:,i) <--> p(:,i)).
 % 
+%   Note: NaN values in any point will assume that that point was occluded 
+%         during measurements and it will be removed from the set used to
+%         calculte the rigid body motion.
+%
+%   [H_q2p,err] = POINTSTOSE3(q,p) also returns the summed least squares 
+%   error:
+%   
+%   p_est = H_q2p(1:3,:)*[q; ones(1,N)]
+%
+%   err = sum( sqrt(sum((p - p_est{i}).^2, 1)) );
+%   
 %   METHOD 1
 %   Special Considerations:
-%       1) NaN values in any point will assume that that point was occluded 
-%       during measurements and it will be removed from the set used to
-%       calculte the rigid body motion.
-%
-%       2) We are assuming the following about covariance of the error 
+%       1) We are assuming the following about covariance of the error 
 %       vectors:
 %           W = Wi for all i
 %           W = w*eye(3)
@@ -36,8 +53,10 @@ function H = pointsToSE3(q,p)
 %
 %   (c) M. Kutzer 10July2015, USNA
 
+% Updates
+%   03Jan2016 - Updated to include automatic best fit selection.
+
 %TODO - implement special cases 3.2.4 from [2]
-%TODO - select best method
 
 %% Check Inputs
 narginchk(2,3);
@@ -58,7 +77,7 @@ p(:,j) = [];
 N = size(p,2);
 if size(p,2) < 4
     warning('There must be at least 4 unoccluded corresponding points to calculated the relative rigid body motion.');
-    H = [];
+    H_q2p = [];
     return
 end
 
@@ -109,3 +128,20 @@ T = q_cm - R*p_cm;
 H{2} = eye(4);
 H{2}(1:3,1:3) = R;
 H{2}(1:3,4) = T;
+% Note: The solution as published returns the inverse of the desired 
+%       output.
+H{2} = invSE(H{2});
+
+%% Select best solution
+p_est = cell(size(H));
+delta_p = nan(size(H));
+for i = 1:numel(H)
+    % Estimate for p
+    p_est{i} = H{i}(1:3,:)*[q; ones(1,N)];
+    % Summed least squares error
+    delta_p(i) = sum( sqrt(sum((p - p_est{i}).^2, 1)) );
+end
+[~,idx] = sort(delta_p,2,'ascend');
+
+H_q2p = H{ idx(1) };
+err = delta_p( idx(1) );
