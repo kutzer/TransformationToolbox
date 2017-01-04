@@ -13,9 +13,9 @@ function varargout = TransformationToolboxVer
 %   M. Kutzer 27Feb2016, USNA
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.0.1';
+A.Version = '1.0.2';
 A.Release = '(R2015b)';
-A.Date = '15-Dec-2016';
+A.Date = '04-Jan-2017';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
