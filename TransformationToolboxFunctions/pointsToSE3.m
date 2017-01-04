@@ -20,10 +20,6 @@ function [H_q2p,err] = pointsToSE3(q,p)
 %
 %   This calculation assumes that there is a correspondence between each 
 %   point contained in q and p (i.e. q(:,i) <--> p(:,i)).
-% 
-%   Note: NaN values in any point will assume that that point was occluded 
-%         during measurements and it will be removed from the set used to
-%         calculte the rigid body motion.
 %
 %   [H_q2p,err] = POINTSTOSE3(q,p) also returns the summed least squares 
 %   error:
@@ -31,6 +27,15 @@ function [H_q2p,err] = pointsToSE3(q,p)
 %   p_est = H_q2p(1:3,:)*[q; ones(1,N)]
 %
 %   err = sum( sqrt(sum((p - p_est{i}).^2, 1)) );
+%
+%   Note: NaN values in any point will assume that that point was occluded 
+%         during measurements and it will be removed from the set used to
+%         calculte the rigid body motion.
+%
+%   Note: Each of these methods will produce a reflection if the result is
+%         better than that of a valid rigid body motion. If the best fit is
+%         a reflection for both methods, an empty set is returned with an
+%         associated error of "Inf."
 %   
 %   METHOD 1
 %   Special Considerations:
@@ -49,21 +54,29 @@ function [H_q2p,err] = pointsToSE3(q,p)
 %       body transformations: a comparison of four major algorithms," 
 %       Machine Vision and Applications (1997) 9: 272–290
 %
-%   See also 
+%   See also findPointCorrespondence, invSE
 %
 %   (c) M. Kutzer 10July2015, USNA
 
 % Updates
-%   03Jan2016 - Updated to include automatic best fit selection.
+%   03Jan2017 - Updated to include automatic best fit selection.
 
 %TODO - implement special cases 3.2.4 from [2]
 
 %% Check Inputs
-narginchk(2,3);
+narginchk(2,2);
 
 N = size(p,2);
 if size(q,2) ~= N
     error('p and q must be the same dimension.');
+end
+
+if size(q,1) ~= 3
+    error('The first input must be a 3xN numeric array.');
+end
+
+if size(p,1) ~= 3
+    error('The second input must be a 3xN numeric array.');
 end
 
 %% Check for occluded points
@@ -78,6 +91,7 @@ N = size(p,2);
 if size(p,2) < 4
     warning('There must be at least 4 unoccluded corresponding points to calculated the relative rigid body motion.');
     H_q2p = [];
+    err = inf;
     return
 end
 
@@ -114,8 +128,8 @@ R = V*transpose(U);
 if det(R) < 0 % account for reflections
     %TODO - confirm that this step of finding the location of the singular
     %value of C is needed, or if V_prime = [v1,v2,-v3] always
-    ZERO = 1e-7; % close enough to zero
-    d = undiag(D);
+    ZERO = 1e-7;    % approximately zero
+    d = diag(D);    % get diagonal elements
     bin = (abs(d) < ZERO);
     sgn = ones(1,3);
     sgn(bin) = -1;
@@ -128,20 +142,56 @@ T = q_cm - R*p_cm;
 H{2} = eye(4);
 H{2}(1:3,1:3) = R;
 H{2}(1:3,4) = T;
-% Note: The solution as published returns the inverse of the desired 
-%       output.
-H{2} = invSE(H{2});
+
+%% Check for valid results
+% Display the associated messages from checking for valid rigid body
+% transformation
+%{
+for i = 1:2
+    [~,msg] = isSE(H{i});
+    fprintf('Method %d: %s\n',i,msg);
+end
+%}
+
+% Check for valid result for Method 1
+if ~isSE(H{1})
+    % Remove invalid rigid body transfomation
+    %disp(H{1})
+    H{1} = [];
+end
+
+% Check for valid result for Method 2
+if isSE(H{2})
+    % Note: The solution as published returns the inverse of the desired 
+    %       output.
+    H{2} = invSE(H{2});
+else
+    % Remove invalid rigid body transfomation
+    %disp( H{2} )
+    H{2} = [];
+end
 
 %% Select best solution
 p_est = cell(size(H));
 delta_p = nan(size(H));
 for i = 1:numel(H)
-    % Estimate for p
-    p_est{i} = H{i}(1:3,:)*[q; ones(1,N)];
-    % Summed least squares error
-    delta_p(i) = sum( sqrt(sum((p - p_est{i}).^2, 1)) );
+    if ~isempty(H{i})
+        % Estimate for p
+        p_est{i} = H{i}(1:3,:)*[q; ones(1,N)];
+        % Summed least squares error
+        delta_p(i) = sum( sqrt(sum((p - p_est{i}).^2, 1)) );
+    else
+        delta_p(i) = inf;
+    end
 end
-[~,idx] = sort(delta_p,2,'ascend');
 
-H_q2p = H{ idx(1) };
-err = delta_p( idx(1) );
+if sum( isfinite(delta_p) ) > 0
+    [~,idx] = sort(delta_p,2,'ascend');
+
+    H_q2p = H{ idx(1) };
+    err = delta_p( idx(1) );
+else
+    % warning('No valid solution found. Closest solution may be a reflection.');
+    H_q2p = [];
+    err = inf;
+end

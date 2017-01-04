@@ -1,7 +1,7 @@
 function bin = isZero(M,ZERO)
-%isZero checks each element of an array to see if it zero. If all elements
+%ISZERO checks each element of an array to see if it zero. If all elements
 %are zero, isZero returns a "1" and "0" otherwise.
-%   isZero(M,ZERO) checks each element of an arbitrary array M against a
+%   ISZERO(M,ZERO) checks each element of an arbitrary array M against a
 %   specified value for zero. If no value for zero is specified, a default
 %   value is specified using the class of M and the spacing of floating
 %   point numbers for that associated class (using eps.m).

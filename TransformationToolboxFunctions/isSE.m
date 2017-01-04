@@ -1,7 +1,7 @@
 function [bin,msg] = isSE(M)
-% isSE checks a matrix to see if it is an element of the special Euclidean
+% ISSE checks a matrix to see if it is an element of the special Euclidean
 % group
-%   isSE(M) checks an nxn matrix "M" for the properties of the special 
+%   ISSE(M) checks an nxn matrix "M" for the properties of the special 
 %   Euclidean group. If M is an element of the special Euclidean
 %   group, this function returns "1", "0" is returned otherwise.
 %

@@ -9,7 +9,9 @@ function e = soBasis(n)
 %       Spaces?"
 %   [2] http://en.wikipedia.org/wiki/Rotation_group_SO(3)
 %
-%   M. Kutzer 26Feb2015, USNA
+%   See also seBasis
+%
+%   M. Kutzer, 26Feb2015, USNA
 
 %TODO - cleanup and comment
 

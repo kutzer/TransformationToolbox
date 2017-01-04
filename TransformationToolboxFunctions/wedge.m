@@ -1,9 +1,8 @@
 function M = wedge(v)
-%wedge converts an Nx1 vector into a skew-symmetric matrix 
+% WEDGE converts an Nx1 vector into a skew-symmetric matrix 
 % for all N \in {1,3,6,10,15,21,28,...}.
-%
-%   wedge(v) calculates a skew-symmetric matrix from elements of v. Note
-%   that the number of elements in v must correspond to the non-zero
+%   M = WEDGE(v) calculates a skew-symmetric matrix from elements of v. 
+%   Note that the number of elements in v must correspond to the non-zero
 %   upper-triangular elements of a real, skew-symmetric matrix:
 %       2 x 2 matrix -> $v \in \mathbb{R}^1$ (2D rotations)
 %       3 x 3 matrix -> $v \in \mathbb{R}^3$ (3D rotations)
@@ -11,15 +10,17 @@ function M = wedge(v)
 %       5 x 5 matrix -> $v \in \mathbb{R}^10$
 %       etc.
 %
-%   See also vee soBasis
+%   See also wedgeSO, vee, veeSO, soBasis, isSkewSymmetric, veeSE, wedgeSE.
 %
 %   M. Kutzer 09Oct2014, USNA
 
 %Updates
 %   27Feb2015 - Updated to include N-dimensional wedge (or hat) operator.
 %   03Feb2016 - Updated documentation
+%   04Jan2017 - Updated documentation
 
 %% Check inputs
+narginchk(1,1);
 m = numel(v);
 v = reshape(v,m,[]);
 
