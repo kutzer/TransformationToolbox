@@ -1,22 +1,31 @@
-function bin= isSkewSymmetric(M)
-% isSkewSymmetric checks a matrix to see if it is skew-symmetric
-%   isSkewSymmetric(M) checks nxn matrix "M" for skew-symmetry. If the M is
-%   skew-symmetric, this function returns "1", "0" is returned otherwise.
+function [bin,msg] = isSkewSymmetric(M)
+% ISSKEWSYMMETRIC checks a matrix to see if it is skew-symmetric
+%   bin = ISSKEWSYMMETRIC(M) checks nxn matrix "M" for skew-symmetry. If 
+%   the M is skew-symmetric, this function returns "1", "0" is returned 
+%   otherwise.
+%
+%   [bin,msg] = ISSKEWSYMMETRIC(M) returns a description of why the matrix
+%   is not skew symmetric.
 %
 %   M. Kutzer 10Oct2014, USNA
 
+% Updates
+%   24Jan2017 - Updated to return a binary and associated message
 %% Check dimensions of M
 if size(M,1) ~= size(M,2) || ~ismatrix(M)
-    error('"M" must be a square matrix.');
+    bin = false;
+    msg = '"M" is not a square matrix.';
+    return
 end
 
 %% Check for custom functions
 %TODO - check for zeroFPError.m
 
 %% Check for skew-symmetric
+msg = [];
 bin = true; % assume skew-symmetric matrix
 
-chk = zeroFPError( sum(sum( abs(M + transpose(M)) )) );
+chk = zeroFPError( abs(M + transpose(M)) );
 try
     % Check if term contains any symbolic variables
     logical(chk);
@@ -26,13 +35,18 @@ catch
 end
 
 try 
-    if abs(chk) > 0  % converts "chk" to logical, it will throw an error if  
-                     % for symbolic arguments are still in the expression.
+    if max( reshape(chk,1,[]) ) > 0  % converts "chk" to logical, it will 
+                                     % throw an error if for symbolic 
+                                     % arguments are still in the 
+                                     % expression.
         bin = false;
+        msg = sprintf(['"abs(M + transpose(M))" returned at least one\n\t\t',...
+            'non-zero value: %.15f.'], max( reshape(chk,1,[]) ));
         return
     end
 catch
     bin = false;
+    msg = 'Unable to check for skew-symmetry.';
     return
 end
 
