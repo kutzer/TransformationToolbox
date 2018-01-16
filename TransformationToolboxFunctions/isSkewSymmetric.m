@@ -11,6 +11,8 @@ function [bin,msg] = isSkewSymmetric(M)
 
 % Updates
 %   24Jan2017 - Updated to return a binary and associated message
+%   16Jan2018 - Updated to define ZERO based on M.
+
 %% Check dimensions of M
 if size(M,1) ~= size(M,2) || ~ismatrix(M)
     bin = false;
@@ -25,13 +27,19 @@ end
 msg = [];
 bin = true; % assume skew-symmetric matrix
 
-chk = zeroFPError( abs(M + transpose(M)) );
+if strcmpi(class(M),'double') || strcmpi(class(M),'single')
+    ZERO = 50*eps( max(abs(reshape(M,1,[]))) );
+    chk = zeroFPError( abs(M + transpose(M)),ZERO );
+else
+    chk = zeroFPError( abs(M + transpose(M)) );
+end
+
 try
     % Check if term contains any symbolic variables
     logical(chk);
 catch
     % Try simplifying complicated term one more time
-    chk = zeroFPError(chk);
+    chk = zeroFPError(chk,ZERO);
 end
 
 try 
