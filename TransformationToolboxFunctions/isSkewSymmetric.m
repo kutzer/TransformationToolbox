@@ -12,6 +12,11 @@ function [bin,msg] = isSkewSymmetric(M)
 % Updates
 %   24Jan2017 - Updated to return a binary and associated message
 %   16Jan2018 - Updated to define ZERO based on M.
+%   07Feb2018 - Updated to refine ZERO estimate based on specific test
+%               condition.
+
+%% Define ZERO scaling term
+ZERO_scale = 1e1;
 
 %% Check dimensions of M
 if size(M,1) ~= size(M,2) || ~ismatrix(M)
@@ -28,7 +33,8 @@ msg = [];
 bin = true; % assume skew-symmetric matrix
 
 if strcmpi(class(M),'double') || strcmpi(class(M),'single')
-    ZERO = 50*eps( max(abs(reshape(M,1,[]))) );
+    %ZERO = 50*eps( max(abs(reshape(M,1,[]))) );
+    ZERO = ZERO_scale * max( reshape(eps(M),1,[]) );
     chk = zeroFPError( abs(M + transpose(M)),ZERO );
 else
     chk = zeroFPError( abs(M + transpose(M)) );

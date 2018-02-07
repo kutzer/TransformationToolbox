@@ -9,7 +9,8 @@ function [Axis,Angle] = SOtoAxisAngle(R)
 %   M. Kutzer 22Jan2016, USNA
 
 % Updates
-%   02Feb2016 - Updated to include n-dimensional axis/angle
+%   02Feb2016 - Updated to include n-dimensional axis/angle.
+%   07Feb2018 - Updated to replace SO check with a warning.
 
 % TODO - update documentation to reflect n-dimensional axis/angle
 % TODO - address negative eigenvalue issues of logm for larger than 3x3
@@ -18,7 +19,7 @@ function [Axis,Angle] = SOtoAxisAngle(R)
 narginchk(1,1);
 [bin,msg] = isSO(R);
 if ~bin
-    error('SOtoAxisAngle:NotSO',...
+    warning('SOtoAxisAngle:NotSO',...
         ['Input must be a valid 2D or 3D rotation matrix.\n',...
         ' -> %s'],msg);
 end
