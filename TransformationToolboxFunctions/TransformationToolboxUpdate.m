@@ -7,6 +7,7 @@ function TransformationToolboxUpdate
 % Updates
 %   07Mar2018 - Updated to include try/catch for required toolbox
 %               installations
+%   15Mar2018 - Updated to include msgbox warning when download fails
 %
 % TODO - Find a location for "TransformationToolbox Example SCRIPTS"
 % TODO - update function for general operation
@@ -71,6 +72,8 @@ alternativeInstallMsg = [...
 if ~confirm
     warning('InstallToolbox:FailedDownload','Failed to download updated version of %s Toolbox.',toolboxName);
     fprintf(2,'\n%s\n',alternativeInstallMsg);
+    
+    msgbox(alternativeInstallMsg, sprintf('Failed to download %s Toolbox',toolboxName),'warn');
     return
 end
 
