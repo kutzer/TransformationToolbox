@@ -1,7 +1,8 @@
 function H = zeroFPError(H,ZERO)
 %zeroFPError zeros round-off terms caused by floating point errors
 %   zeroFPError(H) simplifies a matrix H by zeroing floating point errors 
-%   with magnitudes less than the default value of 1e-10.
+%   with magnitudes less than the 10*eps(class(H)) for single and double 
+%   precision variables, and a default value of 1e-10 otherwise.
 %
 %   zeroFPError(H,ZERO) simplifies a matrix H by zeroing floating point  
 %   errors with magnitudes less than the value specified in ZERO.
@@ -21,6 +22,7 @@ function H = zeroFPError(H,ZERO)
 %               VPA for decimal coefficients in output.
 %   27Oct2014 - Added "See also".
 %   13May2015 - Updated definition of zero and "See also".
+%   07Nov2018 - Updated documentation of default zero.
 
 %% Set Defaults
 if nargin < 2
