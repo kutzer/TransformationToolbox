@@ -9,7 +9,7 @@ function [bin,msg] = isSO(M)
 %   
 %   See also isSE
 %
-%   M. Kutzer 12May2015, USNA
+%   M. Kutzer, 12May2015, USNA
 
 % Updates
 %   03Jan2017 - Updated to relax constraints on the determinant, mutual

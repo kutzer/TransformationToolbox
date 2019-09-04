@@ -9,7 +9,7 @@ function [bin,msg] = isSE(M)
 %   
 %   See also hgtransform triad showTriad hideTriad isSO
 %
-%   (c) M. Kutzer 13May2015, USNA
+%   M. Kutzer, 13May2015, USNA
 
 %% Check dimensions
 d = size(M);
