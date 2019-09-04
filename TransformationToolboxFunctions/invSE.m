@@ -8,11 +8,12 @@ function invH = invSE(H)
 
 % Updates:
 %   04Sep2019 - Added details to error message
+%   04Sep2019 - Replaced error with warning message
 
 %% Check input
 [bin,msg] = isSE(H);
 if ~bin
-    error('Input must be a valid member of the Special Euclidean group.\n\t-> %s',msg);
+    warning('invSE:NotSE','Input must be a valid member of the Special Euclidean group.\n\t-> %s',msg);
 end
 
 %% Calculate inverse

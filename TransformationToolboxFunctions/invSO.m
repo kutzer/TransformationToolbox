@@ -9,11 +9,12 @@ function invR = invSO(R)
 
 % Updates:
 %   04Sep2019 - Added details to error message
+%   04Sep2019 - Replaced error with warning message
 
 %% Check input
 [bin,msg] = isSO(R);
 if ~bin
-    error('Input must be a valid member of the Special Orthogonal group.\n\t-> %s',msg);
+    warning('invSO:NotSO','Input must be a valid member of the Special Orthogonal group.\n\t-> %s',msg);
 end
 
 invR = transpose( R );
