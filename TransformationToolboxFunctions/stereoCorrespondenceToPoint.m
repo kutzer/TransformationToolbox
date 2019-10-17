@@ -197,7 +197,7 @@ err_mb = norm(P_mb_est - P_mb);
 if plotsOn
     fig_m = figure('Name','stereoCorrespondenceToPoint.m');
     for i = 1:2
-        axs_m(i) = subplot(1,2,i,'Parent',fig_m);
+        axs_m(i) = subplot(1,2,i,'Parent',fig_m,'YDir','reverse');
         hold(axs_m(i),'on');
         daspect(axs_m(i),[1 1 1]);
         xlabel(axs_m(i),'x (pixels)');
