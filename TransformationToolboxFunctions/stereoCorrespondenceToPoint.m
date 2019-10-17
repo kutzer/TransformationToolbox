@@ -82,7 +82,7 @@ P_ma(3,1) = 1;
 P_mb(3,1) = 1;
 
 %% Define debug flags
-plotsOn = true;
+plotsOn = false;
 
 if plotsOn
     fig_s = figure('Name','stereoCorrespondenceToPoint.m');
