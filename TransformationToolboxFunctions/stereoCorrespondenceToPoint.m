@@ -150,7 +150,7 @@ while convValue > convTolerance
     convValue = max( [max(sa) - min(sa), max(sb) - min(sb)] );
     
     % Visualize convergence
-    if plotOn
+    if plotsOn
         % Update depth to camera b vs depth to camera a
         set(plt_sAll,'XData',sa,'YData',sb);
         % Update average
