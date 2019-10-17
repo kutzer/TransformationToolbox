@@ -16,11 +16,12 @@ function varargout = TransformationToolboxVer
 %   07Mar2018 - Updated to include try/catch for required toolbox
 %               installations
 %   15Mar2018 - Updated to include msgbox warning when download fails
+%   17Oct2019 - Added stereoCorrespondenceToPoint.m
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.0.7';
-A.Release = '(R2015b)';
-A.Date = '15-Mar-2018';
+A.Version = '1.0.8';
+A.Release = '(R2019a)';
+A.Date = '17-Oct-2019';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
