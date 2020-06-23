@@ -38,7 +38,7 @@ end
 %% Check for determinant of 1
 %ZERO = 2e3*eps(class(M));
 detM = det(M);
-ZERO = ZERO_scale * max([eps(detM),1]);
+ZERO = ZERO_scale * max([eps(detM),1e-6]);
 if ~isZero(detM-1,ZERO)
     msg = sprintf('Matrix has a determinant of %.15f.',detM);
     bin = 0;
