@@ -1,3 +1,2 @@
 - SVD to make an approximate rotation into a rotation
-- Points to SE3
 - Update logSO?
