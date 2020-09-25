@@ -60,6 +60,8 @@ function [H_q2p,err] = pointsToSE3(q,p)
 
 % Updates
 %   03Jan2017 - Updated to include automatic best fit selection.
+%   25Sep2020 - Updated to find nearest element of SE(3) when the defined
+%               value is incorrect.
 
 %TODO - implement special cases 3.2.4 from [2]
 
@@ -157,7 +159,10 @@ end
 if ~isSE(H{1})
     % Remove invalid rigid body transfomation
     %disp(H{1})
-    H{1} = [];
+    %H{1} = [];
+    
+    % Find nearest element of SE(3)
+    H{1} = nearestSE(H{1});
 end
 
 % Check for valid result for Method 2
@@ -168,7 +173,10 @@ if isSE(H{2})
 else
     % Remove invalid rigid body transfomation
     %disp( H{2} )
-    H{2} = [];
+    %H{2} = [];
+    
+    % Find nearest element of SE(3)
+    H{2} = nearestSE(H{2});
 end
 
 %% Select best solution
