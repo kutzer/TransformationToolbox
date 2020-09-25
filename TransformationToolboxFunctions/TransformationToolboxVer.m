@@ -18,11 +18,12 @@ function varargout = TransformationToolboxVer
 %   15Mar2018 - Updated to include msgbox warning when download fails
 %   17Oct2019 - Added stereoCorrespondenceToPoint.m
 %   13Jul2020 - Updated setTriad 'scale' parameter
+%   25Sep2020 - Updated to add nearestSO and nearestSE
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.0.9';
+A.Version = '1.1.0';
 A.Release = '(R2019a)';
-A.Date = '13-Jul-2020';
+A.Date = '25-Sep-2020';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
