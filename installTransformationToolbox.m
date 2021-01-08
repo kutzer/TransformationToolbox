@@ -15,6 +15,7 @@ function installTransformationToolbox(replaceExisting)
 %   M. Kutzer 17Feb2016, USNA
 
 % Updates
+%   08Jan2021 - Corrected questdlg
 
 % TODO - Allow users to create a local version if admin rights are not
 % possible.
@@ -45,7 +46,7 @@ if isToolbox == 7
         choice = questdlg(sprintf(...
             ['MATLAB Root already contains the Transformation Toolbox.\n',...
             'Would you like to replace the existing toolbox?']),...
-            'Yes','No');
+            'Replace Existing Transformation Toolbox','Yes','No','Cancel','Yes');
     elseif replaceExisting
         choice = 'Yes';
     else
