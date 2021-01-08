@@ -19,11 +19,12 @@ function varargout = TransformationToolboxVer
 %   17Oct2019 - Added stereoCorrespondenceToPoint.m
 %   13Jul2020 - Updated setTriad 'scale' parameter
 %   25Sep2020 - Updated to add nearestSO and nearestSE
+%   08Jan2021 - Updated ToolboxUpdate
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.0';
-A.Release = '(R2019a)';
-A.Date = '25-Sep-2020';
+A.Version = '1.1.1';
+A.Release = '(R2019b)';
+A.Date = '08-Jan-2021';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
