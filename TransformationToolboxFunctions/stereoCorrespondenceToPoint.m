@@ -2,24 +2,34 @@ function [P_ca,P_cb,err_ma,err_mb] = stereoCorrespondenceToPoint(P_ma,P_mb,A_ca2
 % STEREOCORRESPONDENCETOPOINT Estimate the 3D position of a point given a
 % pixel correspondence from two cameras with known extrinsics and
 % extrinsics. 
+%   ___ = STEREOCORRESPONDENCETOPOINT(P_ma,P_mb,A_ca2ma,A_cb2mb,H_ca2cb)
+%
 %   ___ = STEREOCORRESPONDENCETOPOINT(P_ma,P_mb,A_ca2ma,A_cb2mb,H_ca2cb,sb)
 %   estimates the 3D position of a point given:
+%
+%   Input(s)
 %       P_ma    - 2D pixel coordinate of the point relative to camera a
 %       P_mb    - 2D pixel coordinate of the point relative to camera b
 %       A_ca2ma - Camera a intrisic matrix 
-%       A_cb2mb - Camera a intrisic matrix 
+%       A_cb2mb - Camera b intrisic matrix 
 %       H_ca2cb - Extrinsics defining camera a relative to camera b
-%       sb      - Initial depth estimate of the point relative to camera b
+%       sb      - [OPTIONAL] Initial depth estimate of the point relative 
+%                 to camera b
 %
 %   [P_ca,P_cb] = STEREOCORRESPONDENCETOPOINT(___) returns
-%       P_ca    - The point defined relative to camera a
-%       P_cb    - The point defined relative to camera b
 %
 %   [P_ca,P_cb,err_ma,err_mb] = STEREOCORRESPONDENCETOPOINT(___) returns
+%
+%   Output(s)
+%       P_ca    - The point defined relative to camera a
+%       P_cb    - The point defined relative to camera b
 %       err_ma  - The reprojection error of the P_ca estimate
 %       err_mb  - The reprojection error of the P_cb estimate
 %
 %   M. Kutzer, 17Oct2019, USNA
+
+% Updates
+%   26Feb2021 - Updated documentation
 
 %% Check inputs
 % Number of inputs
