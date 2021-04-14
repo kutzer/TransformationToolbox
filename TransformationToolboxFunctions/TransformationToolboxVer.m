@@ -20,11 +20,12 @@ function varargout = TransformationToolboxVer
 %   13Jul2020 - Updated setTriad 'scale' parameter
 %   25Sep2020 - Updated to add nearestSO and nearestSE
 %   08Jan2021 - Updated ToolboxUpdate
+%   14Apr2021 - Added solveAXeqXBinSE.m
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.1';
+A.Version = '1.1.2';
 A.Release = '(R2019b)';
-A.Date = '08-Jan-2021';
+A.Date = '14-Apr-2021';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
