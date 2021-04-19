@@ -21,11 +21,12 @@ function varargout = TransformationToolboxVer
 %   25Sep2020 - Updated to add nearestSO and nearestSE
 %   08Jan2021 - Updated ToolboxUpdate
 %   14Apr2021 - Added solveAXeqXBinSE.m
+%   19Apr2021 - Updated covSE and meanSE to use invSE
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.2';
+A.Version = '1.1.3';
 A.Release = '(R2019b)';
-A.Date = '14-Apr-2021';
+A.Date = '19-Apr-2021';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);

@@ -13,6 +13,18 @@ function [SigmaH,muH] = covSE(varargin)
 %   [SigmaH,muH] = COVSE(...) returns both the covariance matrix and the
 %   mean (either provided or calculated depending on the provided inputs).
 %
+%   Input(s)
+%         H - n-element cell array containing rigid body transformations
+%             H{i} \in SE(M) - ith sample
+%       muH - [OPTIONAL] (M+1)x(M+1) array containing the mean of 
+%             transformations
+%             muH \in SE(M)
+%
+%   Output(s)
+%       SigmaH - (M+1)x
+%          muH - (M+1)x(M+1) array containing the mean of transformations
+%                 muH \in SE(M)
+%
 %   References:
 %   [1] A.W. Long, K.C. Wolfe, M.J. Mashner, & G.S. Chirikjian, "The Banana
 %       Distribution is Gaussian: A Localization Study with Exponential 
@@ -72,7 +84,12 @@ N = numel(H);
 M = numel( veeSE(logm(muH),'fast') );
 SigmaH = zeros(M);
 for i = 1:N
-    y_i = veeSE(logm( inv(muH)*H{i} ),'fast');
+    try
+        y_i = veeSE(logm( invSE(muH)*H{i} ),'fast');
+    catch 
+        invSE(muH)*H{i}
+        break
+    end
     SigmaH = SigmaH + y_i*transpose(y_i);
 end
 SigmaH = (1/N) * SigmaH;

@@ -3,7 +3,13 @@ function muH = meanSE(H)
 %   muH = MEANSE(H) approximates the mean of a sample of rigid body
 %   transformations defined as elements of an N-element cell array, H. 
 %
-%       H{i} \in SE(M) - ith sample
+%   Input(s)
+%       H - n-element cell array containing rigid body transformations
+%           H{i} \in SE(M) - ith sample
+%
+%   Output(s)
+%       muH - (M+1)x(M+1) array containing the mean of transformations
+%           muH \in SE(M)
 %
 %   References:
 %   [1] A.W. Long, K.C. Wolfe, M.J. Mashner, & G.S. Chirikjian, "The Banana
@@ -13,6 +19,9 @@ function muH = meanSE(H)
 %   See also covSE, isSE
 %
 %   M. Kutzer, 04Jan2017, USNA
+
+% Updates:
+%   19Apr2021 - Replaced inv with invSE
 
 %% Check Inputs
 narginchk(1,1);
@@ -39,7 +48,6 @@ if ~isempty(idx)
     error(msg);
 end
 
-
 %% Calculate mean
 N = numel(H);   % Total number of samples
 M = size(H,1);  % Dimension of matrix
@@ -52,7 +60,7 @@ goFlag = true;
 while goFlag
     summation = zeros(M);
     for i = 1:N
-        summation = summation + logm( inv(muH{1}) * H{i} );
+        summation = summation + logm( invSE(muH{1}) * H{i} );
     end
     muH{2} = muH{1} * expm( (1/N)*summation );
     
