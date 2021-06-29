@@ -22,11 +22,12 @@ function varargout = TransformationToolboxVer
 %   08Jan2021 - Updated ToolboxUpdate
 %   14Apr2021 - Added solveAXeqXBinSE.m
 %   19Apr2021 - Updated covSE and meanSE to use invSE
+%   29Jun2021 - Updated to add rigidBodyTree support
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.3';
+A.Version = '1.1.4';
 A.Release = '(R2019b)';
-A.Date = '19-Apr-2021';
+A.Date = '29-Jun-2021';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
