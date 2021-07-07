@@ -11,5 +11,9 @@ function DH = kinematicStr2DHtable(str)
 %
 %   M. Kutzer, 29Jun2021, USNA
 
+% THIS FUNCTION MAY BE HOPELESS!!!
+
+error('Function not complete.');
+
 %% Check input(s)
 narginchk(1,1);

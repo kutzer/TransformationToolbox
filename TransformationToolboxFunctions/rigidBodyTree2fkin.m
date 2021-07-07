@@ -30,6 +30,8 @@ function [strs,funcs,links,jlims,jhome] = rigidBodyTree2fkin(rbt)
 %
 %   M. Kutzer, 28Jun2021, USNA
 
+debug = false;
+
 %% Check input(s)
 narginchk(1,1);
 switch lower(class( rbt ))
@@ -74,6 +76,22 @@ while nnz(fullyExpanded) < numel(fullyExpanded)
     end
 end
 
+% Debug code
+if debug
+    fprintf('Branch index lists:\n');
+    for i = 1:numel(idxLists)
+        fprintf('\tBranch %d: [',i);
+        n = numel(idxLists{i});
+        for j = 1:n
+            if j < n
+                fprintf('%d, ',idxLists{i}(j));
+            else
+                fprintf('%d]\n',idxLists{i}(j));
+            end
+        end
+    end
+end
+            
 %% Parse kinematics for each serial rigid body list
 % Define zero parameters
 rpyZERO = 1e-5;    % define "zero" for angles (radians)
@@ -97,6 +115,12 @@ for i = 1:n
     jhome_i = [];
     
     rbList = rbLists{i};
+    
+    % Debug Code
+    if debug
+        fprintf('Branch %d:\n',i);
+    end
+    
     % Cycle through each element of the rigid body list
     for j = 1:numel(rbList)
         % Parent transform
@@ -111,6 +135,16 @@ for i = 1:n
         jLims = rbList{j}.Joint.PositionLimits;
         jHome = rbList{j}.Joint.HomePosition;
         
+        % Debug code
+        if debug
+            fprintf('\tRigid Body %d\n',j);
+            fprintf('\t\tName: "%s"\n',bName);
+            fprintf('\t\tJoint Type: "%s"\n',jType);
+            fprintf('\t\tJoint Axis: [%.5f, %.5f, %.5f]\n',jAxis);
+            fprintf('\t\tJoint Limits: [%.5f, %.5f]\n',jLims);
+            fprintf('\t\tJoint Home: %.5f\n',jHome);
+        end
+            
         % Update link name list
         links_i{end+1} = bName;
         
@@ -119,6 +153,16 @@ for i = 1:n
         xyz_j2p = H_j2p(1:3,4).';
         rpy_c2j = rotm2eul(H_c2j(1:3,1:3),'XYZ');
         xyz_c2j = H_c2j(1:3,4).';
+        
+        % Debug code
+        if debug
+            fprintf('\t\tJoint relative to Parent:\n')
+            fprintf('\t\t\txyz: [%.5f, %.5f, %.5f]\n',xyz_j2p);
+            fprintf('\t\t\trpy: [%.5f, %.5f, %.5f]\n',rpy_j2p);
+            fprintf('\t\tChild relative to Joint:\n')
+            fprintf('\t\t\txyz: [%.5f, %.5f, %.5f]\n',xyz_c2j);
+            fprintf('\t\t\trpy: [%.5f, %.5f, %.5f]\n',rpy_c2j);
+        end
         
         % Define rigid transformation strings
         % - xyz translation
@@ -196,6 +240,11 @@ for i = 1:n
         end
         
     end % rbList expansion
+    
+    % Account for empty string
+    if isempty(str_i)
+        str_i = '0';
+    end
     
     % Append string, limits, home, and create function
     strs{i,1} = str_i;
