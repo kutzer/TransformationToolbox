@@ -312,7 +312,7 @@ else
     end
 end
 
-switch nV
+switch sgn
     case 1
         sgn = '';
     case -1
