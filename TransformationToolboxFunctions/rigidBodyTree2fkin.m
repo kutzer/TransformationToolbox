@@ -243,7 +243,7 @@ for i = 1:n
     
     % Account for empty string
     if isempty(str_i)
-        str_i = '0';
+        str_i = 'eye(4)';
     end
     
     % Append string, limits, home, and create function
