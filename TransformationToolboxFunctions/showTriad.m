@@ -8,23 +8,26 @@ function h = showTriad(h)
 %
 %   See also hgtransform triad hideTriad showTriadLabels hideTriadLabels
 %
-%   (c) M. Kutzer 19Dec2014, USNA
+%   M. Kutzer 19Dec2014, USNA
 
 %Updates
 %   13May2015 - Updated definition for multiple triads and extended 
 %               documentation
 %   13Aug2015 - Updated to include triad labels
+%   09Sep2021 - Updated to fix hidden elements
 
 %% Show triad
 axs_tags = {'X-Axis','Y-Axis','Z-Axis'};
+txt_tags = {'X-Label','Y-Label','Z-label'};
 for i = 1:numel(h)
-    kids = get(h(i),'Children');
+    % Show axes
     for j = 1:numel(axs_tags)
-        idx = find(~cellfun(@isempty, strfind(get(kids,'Tag'),axs_tags{j})));
-        for k = 1:numel(idx)
-            if strcmpi( get(kids(idx(k)),'Type'), 'Line' )
-                set(kids(idx(k)),'Visible','on');
-            end
-        end
+        kid = findobj('Parent',h(i),'Tag',axs_tags{j},'Type','line');
+        set(kid,'Visible','on');
+    end
+    % Show labels
+    for j = 1:numel(txt_tags)
+        kid = findobj('Parent',h(i),'Tag',txt_tags{j},'Type','text');
+        set(kid,'Visible','on');
     end
 end

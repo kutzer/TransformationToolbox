@@ -14,20 +14,23 @@ function h = hideTriad(h)
 %   13May2015 - Updated definition for multiple triads and extended 
 %               documentation
 %   13Aug2015 - Updated to include triad labels
+%   09Sep2021 - Updated to match showTriad
 
 %% Hide labels
 h = hideTriadLabels(h);
 
 %% Hide axes
 axs_tags = {'X-Axis','Y-Axis','Z-Axis'};
+txt_tags = {'X-Label','Y-Label','Z-label'};
 for i = 1:numel(h)
-    kids = get(h(i),'Children');
+    % Show axes
     for j = 1:numel(axs_tags)
-        idx = find(~cellfun(@isempty, strfind(get(kids,'Tag'),axs_tags{j})));
-        for k = 1:numel(idx)
-            if strcmpi( get(kids(idx(k)),'Type'), 'Line' )
-                set(kids(idx(k)),'Visible','off');
-            end
-        end
+        kid = findobj('Parent',h(i),'Tag',axs_tags{j},'Type','line');
+        set(kid,'Visible','off');
+    end
+    % Show labels
+    for j = 1:numel(txt_tags)
+        kid = findobj('Parent',h(i),'Tag',txt_tags{j},'Type','text');
+        set(kid,'Visible','off');
     end
 end
