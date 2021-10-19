@@ -9,5 +9,5 @@ MATLAB Transformation Toolbox
 5. Run "installTransformationToolbox"
 
 ## Update Instructions
-Open MATLAB as an administrator
-Run "TransformationToolboxUpdate"
+1. Open MATLAB as an administrator
+2. Run "TransformationToolboxUpdate"
