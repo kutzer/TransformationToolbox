@@ -1,4 +1,4 @@
-function invH = invSE(H)
+function invH = invSE(H,fast)
 % INVSE Calculates the inverse of an element of the Special Euclidean group
 % using the properties of rotation matrices.
 %   
@@ -10,10 +10,20 @@ function invH = invSE(H)
 %   04Sep2019 - Added details to error message
 %   04Sep2019 - Replaced error with warning message
 
+% Updates
+%   02Nov2021 - Updated to include "fast"
+
 %% Check input
-[bin,msg] = isSE(H);
-if ~bin
-    warning('invSE:NotSE','Input must be a valid member of the Special Euclidean group.\n\t-> %s',msg);
+narginchk(1,2);
+if nargin < 2
+    fast = false;
+end
+
+if ~fast
+    [bin,msg] = isSE(H);
+    if ~bin
+        warning('invSE:NotSE','Input must be a valid member of the Special Euclidean group.\n\t-> %s',msg);
+    end
 end
 
 %% Calculate inverse
