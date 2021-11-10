@@ -29,6 +29,9 @@ function funcJ = calculateJacobian(q,H_e2o,varargin)
 %       % Calculate delta_X
 %       delta_X(1:3,1) = delta_H_e2o(1:3,4);
 %       delta_X(4:6,1) = vee( logm(delta_H_e2o(1:3,1:3)),'fast');
+%       % Reference delta_X to the base frame
+%       R_e2o_now = H_e2o_now(1:3,1:3);
+%       delta_X(1:3,1) = R_e2o_now*delta_X(1:3,1);
 %       % Calculate delta_q
 %       delta_q = pinv( funcJ(q_now) )*delta_X;
 %       % Calculate updated q
