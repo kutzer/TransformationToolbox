@@ -1,16 +1,29 @@
-function muH = meanSE(H,fast)
+function muH = meanSE(H,varargin)
 % MEANSE approximates the mean of a sample of rigid body transformations.
 %   muH = MEANSE(H) approximates the mean of a sample of rigid body
 %   transformations defined as elements of an N-element cell array, H.
 %
+%   muH = MEANSE(H,tf)
+%
+%   muH = MEANSE(H,ZERO)
+%
+%   muH = MEANSE(H,tf,ZERO)
+%
 %   Input(s)
-%       H - n-element cell array containing rigid body transformations
-%           H{i} \in SE(M) - ith sample
+%       H    - n-element cell array containing rigid body transformations
+%              H{i} \in SE(M) - ith sample
+%       tf   - true/false value indicating whether or not an error should
+%              be thrown if one or more elements of H are not valid 
+%              elements of SE(N).
+%                   tf = [true] - Throw an error if H{i} \notin SE(N)
+%                   tf = false  - Warn, but do not throw an error
+%       ZERO - positive value that is sufficiently close to zero to be
+%              assumed zero (e.g. ZERO = 1e-8). If ZERO is not specified or
+%              if ZERO = [], a default value is used.
 %
 %   Output(s)
-%       muH - (M+1)x(M+1) array containing the mean of transformations
-%           muH \in SE(M)
-%       H{i} \in SE(M) - ith sample
+%       muH - (M+1)x(M+1) array containing the mean of transformations such
+%             that muH \in SE(M)
 %
 %   References:
 %   [1] A.W. Long, K.C. Wolfe, M.J. Mashner, & G.S. Chirikjian, "The Banana
@@ -26,23 +39,51 @@ function muH = meanSE(H,fast)
 %   20Apr2021 - Updated to include "fast"
 %   02Nov2021 - Updated to use "fast" invSE
 %   02Nov2021 - Updated to force real skew-symmetry in delta_h
+%   18Nov2021 - Replaced "fast" with "tf"
+%   18Nov2021 - Updated to include ZERO definition
 
 %% Check Inputs
-narginchk(1,2);
+narginchk(1,3);
+
 if nargin < 2
-    fast = false;
+    tf = false;
+    ZERO = [];
 end
+
+if nargin == 2
+    % muH = MEANSE(H,tf)
+    % muH = MEANSE(H,ZERO)
+    if ~islogical(varargin{1})
+        % TODO - consider warning and/or enforcing use of logical tf
+        %        argument
+        if varargin{1} == 0 || varargin == 1
+            tf = true;
+            ZERO = [];
+        else
+            tf = false;
+            ZERO = varargin{1};
+        end
+    end
+end
+
+if nargin == 3
+    % muH = MEANSE(H,tf,ZERO)
+    tf = varargin{1};
+    ZERO = varargin{2};
+end
+
+% TODO - check tf value 
 
 if ~iscell(H)
     error('Input must be defined as an N-element cell array.');
 end
 
-
+% Check values contained in H for valid SE(N)
 msgs = {};
 idx = [];
 N = numel(H);
 for i = 1:N
-    [bin,msg] = isSE(H{i});
+    [bin,msg] = isSE(H{i},ZERO);
     if ~bin
         msgs{end+1} = msg;
         idx(end+1) = i;
@@ -54,7 +95,7 @@ if ~isempty(idx)
     for i = 1:numel(msgs)
         msg = [msg, sprintf('\tElement %d: %s\n',idx(i),msgs{i})];
     end
-    if ~fast
+    if ~tf
         error(msg);
     else
         fprintf('%s\n',msg);
@@ -89,7 +130,7 @@ while goFlag
     end
     muH{2} = muH{1} * expm( (1/N)*summation );
     
-    if isZero(muH{2} - muH{1})
+    if isZero(muH{2} - muH{1},ZERO)
         goFlag = false;
         muH = muH{2};
         break

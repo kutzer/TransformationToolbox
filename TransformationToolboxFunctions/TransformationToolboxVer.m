@@ -24,11 +24,13 @@ function varargout = TransformationToolboxVer
 %   19Apr2021 - Updated covSE and meanSE to use invSE
 %   29Jun2021 - Updated to add rigidBodyTree support
 %   02Nov2021 - Updated meanSE with forced real skew-symmetry 
+%   18Nov2021 - Updated meanSE, isSO, isSE, and isZERO to include a
+%               user-specified optional ZERO input
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.5';
+A.Version = '1.1.6';
 A.Release = '(R2019b)';
-A.Date = '02-Nov-2021';
+A.Date = '18-Nov-2021';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
