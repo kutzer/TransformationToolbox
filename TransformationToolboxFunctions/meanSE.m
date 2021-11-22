@@ -41,6 +41,7 @@ function muH = meanSE(H,varargin)
 %   02Nov2021 - Updated to force real skew-symmetry in delta_h
 %   18Nov2021 - Replaced "fast" with "tf"
 %   18Nov2021 - Updated to include ZERO definition
+%   22Nov2021 - Fixed varargin{1} error
 
 %% Check Inputs
 narginchk(1,3);
@@ -56,7 +57,7 @@ if nargin == 2
     if ~islogical(varargin{1})
         % TODO - consider warning and/or enforcing use of logical tf
         %        argument
-        if varargin{1} == 0 || varargin == 1
+        if varargin{1} == 0 || varargin{1} == 1
             tf = true;
             ZERO = [];
         else
