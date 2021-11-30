@@ -42,6 +42,7 @@ function muH = meanSE(H,varargin)
 %   18Nov2021 - Replaced "fast" with "tf"
 %   18Nov2021 - Updated to include ZERO definition
 %   22Nov2021 - Fixed varargin{1} error
+%   30Nov2021 - Special case for 2-transformation mean
 
 %% Check Inputs
 narginchk(1,3);
@@ -102,6 +103,41 @@ if ~isempty(idx)
         fprintf('%s\n',msg);
     end
 end
+
+%% Special case (2 transforms)
+if numel(H) == 2
+    H_1to2 = invSE(H{2})*H{1};
+    delta_h = logm( H_1to2 );
+    
+    % Force skew-symmetry in rotation portion of screw
+    %   delta_h \in se(3)
+    %   delta_r \in so(3)
+    %   ~ Forcing delta_r to be skew-symmetric should account for
+    %     round-off errors
+    %   TODO - find documentation reinforcing this approach
+    delta_r = delta_h(1:3,1:3);
+    delta_r = forceRealSkewSymmetric(delta_r);
+    delta_h(1:3,1:3) = delta_r;
+        
+    muH = H{2} * expm( (1/2)*delta_h );
+    
+    return
+end
+
+% %% Special case (2 transforms)
+% if numel(H) == 2
+%     H_1to2 = invSE(H{2})*H{1};
+%     X_1to2 = H_1to2(1:3,4);
+%     R_1to2 = H_1to2(1:3,1:3);
+%     r_1to2 = vee(logm(R_1to2));
+%     dR = expm( wedge( r_1to2./2 ) );
+%     dX = X_1to2./2;
+%     dH = eye(4);
+%     dH(1:3,1:3) = dR;
+%     dH(1:3,4) = dX;
+%     muH = H{2} * dH;
+%     return
+% end
 
 %% Calculate mean
 N = numel(H);   % Total number of samples
