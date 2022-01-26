@@ -23,11 +23,15 @@ function v = vee(M,options)
 %   03Feb2016 - Documentation update and added check for isSkewSymmetric.m
 %   04Jan2017 - Updated documentation
 %   24Jan2017 - Replaced skew-symmetric error 
+%   26Jan2022 - Added increased "zero" value of 1e-8
+
 %% Default options
 narginchk(1,2);
 if nargin < 2
     options = '';
 end
+
+ZERO = 1e-8;
 
 %% Check M
 switch lower(options)
@@ -35,7 +39,7 @@ switch lower(options)
         % Do not check for skew-symmetry
     otherwise
         if exist('isSkewSymmetric','file')
-            [bin,msg] = isSkewSymmetric(M);
+            [bin,msg] = isSkewSymmetric(M,ZERO);
             if ~bin
                 warning('"M" must be skew-symmetric.\n\t -> %s',msg);
             end

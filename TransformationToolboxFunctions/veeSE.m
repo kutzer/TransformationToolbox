@@ -17,11 +17,16 @@ function v = veeSE(M,options)
 %
 %   M. Kutzer, 04Jan2017, USNA
 
+% Updates
+%   26Jan2022 - Added increased "zero" value of 1e-8
+
 %% Default options
 narginchk(1,2);
 if nargin < 2
     options = '';
 end
+
+ZERO = 1e-8;
 
 %% Check M
 N = size(M,1);
@@ -30,8 +35,9 @@ switch lower(options)
         % Do not check (N-1)x(N-1) for skew-symmetry
     otherwise
         if exist('isSkewSymmetric','file')
-            if ~isSkewSymmetric(M(1:(N-1),1:(N-1)))
-                error('"M" must be skew-symmetric.');
+            [bin,msg] = isSkewSymmetric(M(1:(N-1),1:(N-1)),ZERO);
+            if ~bin
+                warning('"M(1:(N-1),1:(N-1))" must be skew-symmetric.\n\t -> %s',msg);
             end
         else
             warning('The function "isSkewSymmetric" was not found. Skipping skew-symmetry check.');

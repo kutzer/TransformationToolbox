@@ -10,6 +10,7 @@ function R = AxisAngletoSO(Axis,Angle)
 
 % Updates
 %   02Feb2016 - Updated to include n-dimensional axis/angle
+%   26Jan2022 - Replaced "vrrotvec2mat" with "axang2rotm" for SO(3)
 
 % TODO - update documentation to reflect n-dimensional axis/angle
 
@@ -30,7 +31,7 @@ switch N
     case 1
         R = [cos(Axis*Angle), -sin(Axis*Angle); sin(Axis*Angle), cos(Axis*Angle)];
     case 3
-        R = vrrotvec2mat([Axis,Angle]);
+        R = axang2rotm([Axis,Angle]);
     otherwise
         % error('AxisAngletoSO:BadAxis',...
         %    'An Axis must be specified as a 3-element array for 3D and a 1-element array for 2D.');

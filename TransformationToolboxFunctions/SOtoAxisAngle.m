@@ -1,26 +1,34 @@
 function [Axis,Angle] = SOtoAxisAngle(R)
-% SOtoAxisAngle converts a 2D or 3D rotation matrix (element of SO(2) or 
-%   SO(3) to axis/angle.
-%
-%   Note: This method includes an extension to n-dimensional rotations
-%
+% SOtoAxisAngle converts a N-dimensional rotation matrix to to an 
+% axis/angle parameterization.
 %   [Axis,Angle] = SOtoAxisAngle(R)
+%   
+%   Input(s)
+%       R - NxN element of SO(N)
+%
+%   Output(s)
+%       Axis - scalar angle value in radians, Axis \in [0,\pi]
 %
 %   M. Kutzer 22Jan2016, USNA
 
 % Updates
 %   02Feb2016 - Updated to include n-dimensional axis/angle.
 %   07Feb2018 - Updated to replace SO check with a warning.
+%   26Jan2022 - Added increased "zero" value of 1e-8
+%   26Jan2022 - Replaced "vrrotmat2vec" with "rotm2axang" for SO(3)
+%   26Jan2022 - Added default axis for zero angle with SO(N) where N > 3
 
-% TODO - update documentation to reflect n-dimensional axis/angle
 % TODO - address negative eigenvalue issues of logm for larger than 3x3
+
+%% Default options
+ZERO = 1e-8;
 
 %% Check inputs
 narginchk(1,1);
-[bin,msg] = isSO(R);
+[bin,msg] = isSO(R,ZERO);
 if ~bin
     warning('SOtoAxisAngle:NotSO',...
-        ['Input must be a valid 2D or 3D rotation matrix.\n',...
+        ['Input must be a valid n-dimensional rotation matrix.\n',...
         ' -> %s'],msg);
 end
 
@@ -32,7 +40,8 @@ switch N
         Axis = sign(Angle);
         Angle = abs(Angle);
     case 3
-        r = vrrotmat2vec(R);
+        %r = vrrotmat2vec(R);
+        r = rotm2axang(R);
         Axis = r(1:3);
         Angle = r(4);
     otherwise
@@ -43,5 +52,10 @@ switch N
         r = logm(R);
         v = vee(r,'fast');
         Angle = norm(v);
-        Axis = transpose( v./Angle );
+        if Angle ~= 0
+            Axis = transpose( v./Angle );
+        else
+            Axis = zeros(1,numel(v));
+            Axis(end) = 1;
+        end
 end

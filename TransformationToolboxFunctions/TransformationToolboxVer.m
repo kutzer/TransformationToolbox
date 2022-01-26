@@ -26,6 +26,8 @@ function varargout = TransformationToolboxVer
 %   02Nov2021 - Updated meanSE with forced real skew-symmetry 
 %   18Nov2021 - Updated meanSE, isSO, isSE, and isZERO to include a
 %               user-specified optional ZERO input
+%   26Jan2022 - Updated SO/SE log/exp functions
+%   26Jan2022 - Updated default ZERO values
 
 A.Name = 'Transformation Toolbox';
 A.Version = '1.1.7';
