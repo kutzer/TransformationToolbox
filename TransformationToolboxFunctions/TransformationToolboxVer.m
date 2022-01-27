@@ -28,11 +28,12 @@ function varargout = TransformationToolboxVer
 %               user-specified optional ZERO input
 %   26Jan2022 - Updated SO/SE log/exp functions
 %   26Jan2022 - Updated default ZERO values
+%   27Jan2022 - Updated to include SEtoSO
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.7';
+A.Version = '1.1.8';
 A.Release = '(R2019b)';
-A.Date = '22-Nov-2021';
+A.Date = '27-Jan-2022';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
