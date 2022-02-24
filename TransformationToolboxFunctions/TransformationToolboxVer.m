@@ -30,9 +30,10 @@ function varargout = TransformationToolboxVer
 %   26Jan2022 - Updated default ZERO values
 %   27Jan2022 - Updated to include SEtoSO
 %   24Feb2022 - Updated calculateJacobian
+%   24Feb2022 - Updated nCross 
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.9';
+A.Version = '1.1.10';
 A.Release = '(R2019b)';
 A.Date = '24-Feb-2022';
 A.URLVer = 1;
