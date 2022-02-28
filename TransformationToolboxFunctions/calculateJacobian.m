@@ -27,8 +27,8 @@ function funcJ = calculateJacobian(q,H_e2o,varargin)
 %
 %       Order:
 %           'TranslationRotation'
-%               funcJ(q) = [ Jrot(q)  ]
-%                          [ Jtran(q) ]
+%               funcJ(q) = [ Jtran(q) ]
+%                          [ Jrot(q)  ]
 %           'RotationTranslation'
 %               funcJ(q) = [ Jrot(q)  ]
 %                          [ Jtran(q) ]
@@ -41,6 +41,7 @@ function funcJ = calculateJacobian(q,H_e2o,varargin)
 %               referenced Jacobians
 %   24Feb2022 - Revised to allow user specification of translation/rotation
 %               vs rotation/translation stacking of Jacobian
+%   28Feb2022 - Documentation update and added comments for saved function
 
 %% Check inputs 
 if nargin < 2
@@ -128,18 +129,25 @@ d_e2o = H_e2o(1:dim,dim+1); % translation associated with forward kinematics
 %% Calculate translation Jacobian
 h = waitbar(0,'Calculating translation portion of Jacobian...');
 fprintf('Calculating translation portion of Jacobian...\n');
-m = numel(d_e2o);
+%m = numel(d_e2o);
 n = numel(q);
 iter = 0;
-for i = 1:m
-    fprintf('\tCalculating for dimension %d...\n',i);
-    for j = 1:n
-        fprintf('\t\tDifferentiating with respect to Joint %d...',j);
-        Jtran(i,j) = simplify( diff(d_e2o(i),q(j)) );
-        iter = iter+1;
-        waitbar(iter/(m*n),h)
-        fprintf('DONE\n');
-    end
+% for i = 1:m
+%     fprintf('\tCalculating for dimension %d...\n',i);
+%     for j = 1:n
+%         fprintf('\t\tDifferentiating with respect to Joint %d...',j);
+%         Jtran(i,j) = simplify( diff(d_e2o(i),q(j)) );
+%         iter = iter+1;
+%         waitbar(iter/(m*n),h)
+%         fprintf('DONE\n');
+%     end
+% end
+for j = 1:n
+    fprintf('\tDifferentiating with respect to Joint %d...',j);
+    Jtran(:,j) = simplify( diff(d_e2o,q(j)) );
+    iter = iter+1;
+    waitbar(iter/n,h)
+    fprintf('DONE\n');
 end
 delete(h);
 drawnow;
@@ -158,17 +166,17 @@ for j = 1:n
     fprintf('\tDifferentiating with respect to Joint %d...',j);
     dR = diff(R_e2o,q(j));
     fprintf('DONE\n');
-    fprintf('\tCalculating so(n)...');
+    fprintf('\t\tCalculating so(n)...');
     if isWorld
         K = dR*transpose(R_e2o);
     else
         K = transpose(R_e2o)*dR;
     end
     fprintf('DONE\n');
-    fprintf('\tVectorizing so(n)...');
+    fprintf('\t\tVectorizing so(n)...');
     k = vee(K,'fast');
     fprintf('DONE\n');
-    fprintf('\tCombining result...');
+    fprintf('\t\tCombining result...');
     Jrot(:,j) = k;
     iter = iter+1;
     waitbar(iter/n,h)
@@ -192,10 +200,54 @@ fprintf('Creating function handle...');
 funcJ = matlabFunction(J,'vars',{q});
 fprintf('DONE\n');
 
-%% Try to create a file
+%% Create a saved MATLAB function if a filename is supplied
 if ~isempty(filename)
+    % Define function comments
+    if isWorld
+        ref = 'world';
+    else
+        ref = 'body';
+    end
+
+    if isTransRot
+        jStack = 'J(q) = [ Jtran(q); Jrot(q) ]';
+    else
+        jStack = 'J(q) = [ Jrot(q); Jtran(q) ]';
+    end
+
+    str = sprintf([...
+        '%s calculates a %s-referenced manipulator Jacobian\n'],...
+        upper(filename),ref);
+    str = sprintf(['%s',...
+        '\tJ = %s(q)\n\n'],...
+        str,filename);
+    str = sprintf(['%s',...
+        '\tInput(s)\n',...
+        '\t\tq - %dx1 array defining joint configuration\n\n'],...
+        str,numel(q));
+    str = sprintf(['%s',...
+        '\tOutput(s)\n',...
+        '\t\tJ - %dx%d array defining %s-referenced Jacobian for \n',...
+        '\t\t    joint configuration q\n\n',...
+        '\t\t    %s\n\n'],...
+        str,size(J,1),size(J,2),ref,jStack);
+    str = sprintf(['%s',...
+        '\tFunction created using "caculateJacobian.m"\n',...
+        '\t%s\n'],...
+        str,datestr(now));
+
+    fprintf('\n-------- DETAILED FUNCTION DOCUMENTATION (copy/paste) --------\n')
+    fprintf('%s',str);
+    fprintf('--------------------------------------------------------------\n\n')
+    
+    % Save function
     fprintf('Saving function "%s.m" to Current Directory...',filename);
-    funcJ = matlabFunction(J,'file',filename,'vars',{q});
+    funcJ = matlabFunction(J,'file',filename,'vars',{q},...
+        'Comments',sprintf('calculateJacobian: %s-referenced, %s',ref,jStack));
+    % TODO - updated to include detailed comments if/when matlabFunction.m 
+    %        improves support
+    %funcJ = matlabFunction(J,'file',filename,'vars',{q},...
+    %    'Comments',str);
     fprintf('SAVED\n');
     return
 end

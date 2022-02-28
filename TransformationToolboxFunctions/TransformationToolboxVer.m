@@ -31,11 +31,12 @@ function varargout = TransformationToolboxVer
 %   27Jan2022 - Updated to include SEtoSO
 %   24Feb2022 - Updated calculateJacobian
 %   24Feb2022 - Updated nCross 
+%   28Feb2022 - Added comments to saved function from calculateJacobian
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.10';
+A.Version = '1.1.11';
 A.Release = '(R2019b)';
-A.Date = '24-Feb-2022';
+A.Date = '28-Feb-2022';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
