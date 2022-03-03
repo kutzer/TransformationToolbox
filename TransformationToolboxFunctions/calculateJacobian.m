@@ -2,6 +2,8 @@ function funcJ = calculateJacobian(q,H_e2o,varargin)
 %CALCULATEJACOBIAN calculates the world or body-fixed manipulator Jacobian
 %   funcJ = calculateJacobian(q,H_e2o)
 %
+%   funcJ = calculateJacobian(q,H_e2o,showStatus)
+%
 %   funcJ = calculateJacobian(___,'Name','Value')
 %
 %   Input(s)
@@ -9,9 +11,12 @@ function funcJ = calculateJacobian(q,H_e2o,varargin)
 %       H_e2o - 3x3 element of SE(2) or 4x4 element of SE(3) defining the
 %               forward kinematics of the manipulator using symbolic terms
 %               for joint variables (all must be contained in q)
+%       showStatus - [Default, true] shows the status in the command prompt
+%                    if true, hides status otherwise. Note that saved
+%                    function status is shown regardless.
 %
 %       Name-Value Arguments
-%           Specify optional comma-separated pairs of Name,Value arguments. 
+%           Specify optional comma-separated pairs of Name,Value arguments.
 %           Name is the argument name and Value is the corresponding value.
 %
 %              Name | Value [default]
@@ -42,8 +47,9 @@ function funcJ = calculateJacobian(q,H_e2o,varargin)
 %   24Feb2022 - Revised to allow user specification of translation/rotation
 %               vs rotation/translation stacking of Jacobian
 %   28Feb2022 - Documentation update and added comments for saved function
+%   03Mar2022 - Added showStatus input option
 
-%% Check inputs 
+%% Check inputs
 if nargin < 2
     error('Both "H_e2o" and "q" must be specified.')
 end
@@ -65,10 +71,18 @@ reference = 'base';
 order = 'translationrotation';
 if nargin > 2
     nV = numel(varargin);
+    if ~ischar(varargin{1})
+        showStatus = varargin{1};
+        varargin(1) = [];
+        nV = numel(varargin);
+    else
+        showStatus = false;
+    end
+    
     if nV/2 ~= round( nV/2 )
         error('Name-Value Arguments must be specified in pairs.')
     end
-
+    
     for i = 1:2:nV
         Name = varargin{i};
         Value = varargin{i+1};
@@ -127,8 +141,10 @@ R_e2o = H_e2o(1:dim,1:dim); % rotation associated with forward kinematics
 d_e2o = H_e2o(1:dim,dim+1); % translation associated with forward kinematics
 
 %% Calculate translation Jacobian
-h = waitbar(0,'Calculating translation portion of Jacobian...');
-fprintf('Calculating translation portion of Jacobian...\n');
+if showStatus
+    h = waitbar(0,'Calculating translation portion of Jacobian...');
+    fprintf('Calculating translation portion of Jacobian...\n');
+end
 %m = numel(d_e2o);
 n = numel(q);
 iter = 0;
@@ -143,14 +159,20 @@ iter = 0;
 %     end
 % end
 for j = 1:n
-    fprintf('\tDifferentiating with respect to Joint %d...',j);
+    if showStatus
+        fprintf('\tDifferentiating with respect to Joint %d...',j);
+    end
     Jtran(:,j) = simplify( diff(d_e2o,q(j)) );
-    iter = iter+1;
-    waitbar(iter/n,h)
-    fprintf('DONE\n');
+    if showStatus
+        iter = iter+1;
+        waitbar(iter/n,h)
+        fprintf('DONE\n');
+    end
 end
-delete(h);
-drawnow;
+if showStatus
+    delete(h);
+    drawnow;
+end
 
 % Update for world/body referenced
 if ~isWorld
@@ -158,32 +180,46 @@ if ~isWorld
 end
 
 %% Calculate rotation Jacobian
-h = waitbar(0,'Calculating rotation portion of Jacobian...');
-fprintf('Calculating rotation portion of Jacobian...\n');
+if showStatus
+    h = waitbar(0,'Calculating rotation portion of Jacobian...');
+    fprintf('Calculating rotation portion of Jacobian...\n');
+end
 %n = numel(q);
 iter = 0;
 for j = 1:n
-    fprintf('\tDifferentiating with respect to Joint %d...',j);
+    if showStatus
+        fprintf('\tDifferentiating with respect to Joint %d...',j);
+    end
     dR = diff(R_e2o,q(j));
-    fprintf('DONE\n');
-    fprintf('\t\tCalculating so(n)...');
+    if showStatus
+        fprintf('DONE\n');
+        fprintf('\t\tCalculating so(n)...');
+    end
     if isWorld
         K = dR*transpose(R_e2o);
     else
         K = transpose(R_e2o)*dR;
     end
-    fprintf('DONE\n');
-    fprintf('\t\tVectorizing so(n)...');
+    if showStatus
+        fprintf('DONE\n');
+        fprintf('\t\tVectorizing so(n)...');
+    end
     k = vee(K,'fast');
-    fprintf('DONE\n');
-    fprintf('\t\tCombining result...');
+    if showStatus
+        fprintf('DONE\n');
+        fprintf('\t\tCombining result...');
+    end
     Jrot(:,j) = k;
-    iter = iter+1;
-    waitbar(iter/n,h)
-    fprintf('DONE\n');
+    if showStatus
+        iter = iter+1;
+        waitbar(iter/n,h)
+        fprintf('DONE\n');
+    end
 end
-delete(h);
-drawnow;
+if showStatus
+    delete(h);
+    drawnow;
+end
 
 %% Deal with constant syms
 %TODO compensate for constant syms (e.g. l1, l2, l3)
@@ -196,9 +232,13 @@ else
 end
 
 %% Combine to create full Jacobian using an anonymous function
-fprintf('Creating function handle...');
+if showStatus
+    fprintf('Creating function handle...');
+end
 funcJ = matlabFunction(J,'vars',{q});
-fprintf('DONE\n');
+if showStatus
+    fprintf('DONE\n');
+end
 
 %% Create a saved MATLAB function if a filename is supplied
 if ~isempty(filename)
@@ -208,13 +248,13 @@ if ~isempty(filename)
     else
         ref = 'body';
     end
-
+    
     if isTransRot
         jStack = 'J(q) = [ Jtran(q); Jrot(q) ]';
     else
         jStack = 'J(q) = [ Jrot(q); Jtran(q) ]';
     end
-
+    
     str = sprintf([...
         '%s calculates a %s-referenced manipulator Jacobian\n'],...
         upper(filename),ref);
@@ -235,7 +275,7 @@ if ~isempty(filename)
         '\tFunction created using "caculateJacobian.m"\n',...
         '\t%s\n'],...
         str,datestr(now));
-
+    
     fprintf('\n-------- DETAILED FUNCTION DOCUMENTATION (copy/paste) --------\n')
     fprintf('%s',str);
     fprintf('--------------------------------------------------------------\n\n')
@@ -244,7 +284,7 @@ if ~isempty(filename)
     fprintf('Saving function "%s.m" to Current Directory...',filename);
     funcJ = matlabFunction(J,'file',filename,'vars',{q},...
         'Comments',sprintf('calculateJacobian: %s-referenced, %s',ref,jStack));
-    % TODO - updated to include detailed comments if/when matlabFunction.m 
+    % TODO - updated to include detailed comments if/when matlabFunction.m
     %        improves support
     %funcJ = matlabFunction(J,'file',filename,'vars',{q},...
     %    'Comments',str);
