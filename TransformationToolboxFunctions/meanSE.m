@@ -43,6 +43,7 @@ function muH = meanSE(H,varargin)
 %   18Nov2021 - Updated to include ZERO definition
 %   22Nov2021 - Fixed varargin{1} error
 %   30Nov2021 - Special case for 2-transformation mean
+%   10Mar2022 - Added else for islogical(varargin{1}) 
 
 %% Check Inputs
 narginchk(1,3);
@@ -65,6 +66,9 @@ if nargin == 2
             tf = false;
             ZERO = varargin{1};
         end
+    else
+        tf = varargin{1};
+        ZERO = [];
     end
 end
 
