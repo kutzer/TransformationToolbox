@@ -22,6 +22,7 @@ function funcJ = calculateJacobian(q,H_e2o,varargin)
 %              Name | Value [default]
 %       'Reference' | { ['Base'], 'End-effector' }
 %           'Order' | { ['TranslationRotation'], 'RotationTranslation' }
+%       'Constants' | Mx1 symbolic array containing kinematic constants
 %        'Filename' | character array specifying Jacobian function name
 %
 %       NOTE: 'world' and 'body' values for 'reference' are also acceptable
@@ -48,6 +49,7 @@ function funcJ = calculateJacobian(q,H_e2o,varargin)
 %               vs rotation/translation stacking of Jacobian
 %   28Feb2022 - Documentation update and added comments for saved function
 %   03Mar2022 - Added showStatus input option
+%   12Apr2022 - Added support of symbolic constant kinematic terms
 
 %% Check inputs
 if nargin < 2
@@ -66,6 +68,7 @@ end
 
 %% Parse name/value pairs
 % Define default values
+c = [];
 filename = [];
 reference = 'base';
 order = 'translationrotation';
@@ -91,6 +94,9 @@ if nargin > 2
                 reference = lower( Value );
             case 'order'
                 order = lower( Value );
+            case 'constants'
+                c = Value;
+                % TODO - check if values are constant!
             case 'filename'
                 filename = Value;
             otherwise
@@ -235,7 +241,11 @@ end
 if showStatus
     fprintf('Creating function handle...');
 end
-funcJ = matlabFunction(J,'vars',{q});
+if ~isempty(c)
+    funcJ = matlabFunction(J,'vars',{q,c});
+else
+    funcJ = matlabFunction(J,'vars',{q});
+end
 if showStatus
     fprintf('DONE\n');
 end
@@ -243,6 +253,12 @@ end
 %% Create a saved MATLAB function if a filename is supplied
 if ~isempty(filename)
     % Define function comments
+    if ~isempty(c)
+        fcnIn = 'q, c';
+    else
+        fcnIn = 'q';
+    end
+
     if isWorld
         ref = 'world';
     else
@@ -250,21 +266,27 @@ if ~isempty(filename)
     end
     
     if isTransRot
-        jStack = 'J(q) = [ Jtran(q); Jrot(q) ]';
+        jStack = sprintf('J(%s) = [ Jtran(%s); Jrot(%s) ]',fcnIn,fcnIn,fcnIn);
     else
-        jStack = 'J(q) = [ Jrot(q); Jtran(q) ]';
+        jStack = sprintf('J(%s) = [ Jrot(%s); Jtran(%s) ]',fcnIn,fcnIn,fcnIn);
     end
     
     str = sprintf([...
         '%s calculates a %s-referenced manipulator Jacobian\n'],...
         upper(filename),ref);
     str = sprintf(['%s',...
-        '\tJ = %s(q)\n\n'],...
-        str,filename);
+        '\tJ = %s(%s)\n\n'],...
+        str,filename,fcnIn);
     str = sprintf(['%s',...
         '\tInput(s)\n',...
-        '\t\tq - %dx1 array defining joint configuration\n\n'],...
+        '\t\tq - %dx1 array defining joint configuration\n'],...
         str,numel(q));
+    if ~isempty(c)
+        str = sprintf(['%s',...
+        '\t\tc - %dx1 array defining fixed parameters\n'],...
+        str,numel(c));
+    end
+    str = sprintf('%s\n',str);
     str = sprintf(['%s',...
         '\tOutput(s)\n',...
         '\t\tJ - %dx%d array defining %s-referenced Jacobian for \n',...
