@@ -29,6 +29,13 @@ function [c,q,err] = approximateFixedKinematics(fcnH_e2o,H_e2o_ALL,options)
 %             the data set.
 %       q   - mxM array containing the joint configurations associated with
 %             fcnH_e2o recovered from the data set.
+%       err - structured array containing error statistics of fixed
+%             kinematics.
+%           *.Mean      - mean error 
+%           *.Max       - max error
+%           *.Min       - min error
+%           *.STD       - error standard deviation
+%           *.Veriance  - error variance
 %
 %       NOTE: q(:,i) corresponds to H_e2o_ALL{i} such that
 %               H_e2o_ALL{i} \approx fcnH_e2o(q(i,:),c)
@@ -114,15 +121,18 @@ c_ub = reshape(c_ub,1,[]);
 %fcost_c = @(c)cost_c(q_ALL,a,c,fcnH_e2o,J_co,H_e2o_ALL,options.RotationWeight);
 
 %% Optimize
+% fmincon - constrained minimization
+% fminunc - unconstrained minimization
 q = q0;
 c = c0;
 
+% Loop through q-minimization/c-minimization until... TBD stop condition
 iter = 0;
 while true
     fcost_q = @(q_ALL)cost_q(q_ALL,a,c,fcnH_e2o,J_qo,H_e2o_ALL,options.RotationWeight);
     [q,fval,exitflag,output] = fmincon(fcost_q,q,[],[],[],[],q_lb,q_ub,[],options);
     
-    fcost_c = @(c)cost_c(q_ALL,a,c,fcnH_e2o,J_co,H_e2o_ALL,options.RotationWeight);
+    fcost_c = @(c)cost_c(q,a,c,fcnH_e2o,J_co,H_e2o_ALL,options.RotationWeight);
     [c,fval,exitflag,output] = fmincon(fcost_c,c,[],[],[],[],c_lb,c_ub,[],options);
     iter = iter+1;
 
@@ -130,6 +140,9 @@ while true
         break
     end
 end
+
+%% Package outputs
+[err,q,c] = errStats(q,a,c,fcnH_e2o,H_e2o_ALL,options.RotationWeight);
 
 end
 
@@ -253,4 +266,39 @@ for i = 1:n
     end
 end
 cost = cost/n;
+end
+
+function [err,q_ALL,c] = errStats(q_ALL,a,c,fcnH_e2o,H_e2o_ALL,rw)
+% Reshape input(s)
+q_ALL = reshape(q_ALL,a,[]);
+c = reshape(c,[],1);
+% Calculate forward kinematics & estimate error
+n = size(q_ALL,2);
+err_ALL = zeros(1,n);
+for i = 1:n
+    % --- Define Cost ---
+    % Recover "true" (experimental) value
+    H_eTru2o = H_e2o_ALL{i};
+    H_o2eTru = invSE(H_eTru2o);
+    % Recover "estimated" value
+    H_eEst2o = fcnH_e2o(q_ALL(:,i),c);
+    % Estimate error
+    H_eEst2eTru = H_o2eTru*H_eEst2o;
+    % Recover rotation & translation errors
+    R_eEst2eTru = H_eEst2eTru(1:(end-1),1:(end-1));
+    d_eEst2eTru = H_eEst2eTru(1:(end-1),end);
+    rotErr = rw*R_eEst2eTru;
+    trnErr = d_eEst2eTru;
+    % Combine errors
+    err = rotErr + repmat(trnErr,1,size(rotErr,2));
+    err = diag( err*err.' );
+    err_ALL = sum(err);
+end
+
+err.Mean = mean(err_ALL);
+err.Max = max(err_ALL);
+err.Min = min(err_ALL);
+err.STD  = std(err_ALL);
+err.Variance = var(err_ALL);
+
 end
