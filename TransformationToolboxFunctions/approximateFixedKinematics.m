@@ -31,7 +31,7 @@ function [c,q,err] = approximateFixedKinematics(fcnH_e2o,H_e2o_ALL,options)
 %             fcnH_e2o recovered from the data set.
 %       err - structured array containing error statistics of fixed
 %             kinematics.
-%           *.Mean      - mean error 
+%           *.Mean      - mean error
 %           *.Max       - max error
 %           *.Min       - min error
 %           *.STD       - error standard deviation
@@ -74,7 +74,9 @@ c = rand(b,1);
 try
     H_e2o = fcnH_e2o(q,c);
 catch
-    error('"fcnH_e2o" must be defined using the following syntax:\n\tH_e2o = fcnH_e2o(q,c);');
+    error(...
+        sprintf('"fcnH_e2o" must be defined using the following syntax:\n\tH_e2o = fcnH_e2o(q,c);')...
+        );
 end
 % TODO - check H_e2o against values of H_e2o_ALL
 
@@ -96,8 +98,16 @@ J_co = calculateJacobian(c,H_e2o_sym,'Constants',q,...
 
 %% Setup Optimization Parameters
 % Optimization options
-fOptions = optimoptions(@fminunc,'Algorithm','trust-region',...
-    'SpecifyObjectiveGradient',true,'HessianFcn','objective');
+%fOptions = optimoptions(@fminunc,'Algorithm','trust-region',...
+%    'SpecifyObjectiveGradient',true,'HessianFcn','objective');
+fOptions_q = optimoptions(@fmincon,'Algorithm','trust-region-reflective',...
+    'SpecifyObjectiveGradient',true,'CheckGradients',false,...
+    'Display','off',...
+    'PlotFcn',@(x,optimValues,state)statusPlot(x,optimValues,state,'q'));
+fOptions_c = optimoptions(@fmincon,'Algorithm','trust-region-reflective',...
+    'SpecifyObjectiveGradient',true,'CheckGradients',false,...
+    'Display','off',...
+    'PlotFcn',@(x,optimValues,state)statusPlot(x,optimValues,state,'c'));
 
 % Optimization parameters
 N = numel(H_e2o_ALL);
@@ -129,11 +139,11 @@ c = c0;
 % Loop through q-minimization/c-minimization until... TBD stop condition
 iter = 0;
 while true
-    fcost_q = @(q_ALL)cost_q(q_ALL,a,c,fcnH_e2o,J_qo,H_e2o_ALL,options.RotationWeight);
-    [q,fval,exitflag,output] = fmincon(fcost_q,q,[],[],[],[],q_lb,q_ub,[],options);
-    
+    fcost_q = @(q)cost_q(q,a,c,fcnH_e2o,J_qo,H_e2o_ALL,options.RotationWeight);
+    [q,fval,exitflag,output] = fmincon(fcost_q,q,[],[],[],[],q_lb,q_ub,[],fOptions_q);
+
     fcost_c = @(c)cost_c(q,a,c,fcnH_e2o,J_co,H_e2o_ALL,options.RotationWeight);
-    [c,fval,exitflag,output] = fmincon(fcost_c,c,[],[],[],[],c_lb,c_ub,[],options);
+    [c,fval,exitflag,output] = fmincon(fcost_c,c,[],[],[],[],c_lb,c_ub,[],fOptions_c);
     iter = iter+1;
 
     if iter == 3
@@ -147,19 +157,21 @@ end
 end
 
 %% Define cost functions
-function [cost,costEq,grad,gradEq] = cost_q(q_ALL,a,c,fcnH_e2o,J_qo,H_e2o_ALL,rw)
+%function [cost,costEq,grad,gradEq] = cost_q(q_ALL,a,c,fcnH_e2o,J_qo,H_e2o_ALL,rw)
+function [cost,grad] = cost_q(q_ALL,a,c,fcnH_e2o,J_qo,H_e2o_ALL,rw)
 % Reshape input(s)
 q_ALL = reshape(q_ALL,a,[]);
 c = reshape(c,[],1);
 % Calculate forward kinematics & estimate error
 n = size(q_ALL,2);
 cost = 0;
-costEq = [];
-if nargout > 2
+%costEq = [];
+%if nargout > 2
+if nargout > 1
     grad = zeros( size(q_ALL) );
-    gradEq = [];
+    %gradEq = [];
 end
-idx = 0;
+
 for i = 1:n
     % --- Define Cost ---
     % Recover "true" (experimental) value
@@ -176,11 +188,13 @@ for i = 1:n
     trnErr = d_eEst2eTru;
     % Combine errors
     err = rotErr + repmat(trnErr,1,size(rotErr,2));
+
     err = diag( err*err.' );
     cost = cost + sum(err);
 
     % --- Define Gradient ---
-    if nargout > 2
+    %if nargout > 2
+    if nargout > 1
         J = J_qo(q_ALL(:,i),c);
         for k = 1:size(J,2)
             v = J(:,k);
@@ -200,27 +214,38 @@ for i = 1:n
             dTrnErr = dd_eEst2eTru;
             % Combine gradient errors
             dErr = dRotErr + repmat(dTrnErr,1,size(dRotErr,2));
-            idx = idx+1;
-            grad(idx) = diag( dErr*err.' + err*dErr.' )/n;
+
+            grad(k,i) =...
+                grad(k,i) +...
+                sum( diag( dErr*diag(err).' + diag(err)*dErr.' ) )/n;
         end
     end
 end
 cost = cost/n;
+
+% Reshape gradient for fmincon
+%if nargout > 2
+if nargout > 1
+    grad = reshape(grad,1,[]);
 end
 
-function [cost,costEq,grad,gradEq] = cost_c(q_ALL,a,c,fcnH_e2o,J_co,H_e2o_ALL)
+end
+
+%function [cost,costEq,grad,gradEq] = cost_c(q_ALL,a,c,fcnH_e2o,J_co,H_e2o_ALL,rw)
+function [cost,grad] = cost_c(q_ALL,a,c,fcnH_e2o,J_co,H_e2o_ALL,rw)
 % Reshape input(s)
 q_ALL = reshape(q_ALL,a,[]);
 c = reshape(c,[],1);
 % Calculate forward kinematics & estimate error
 n = size(q_ALL,2);
 cost = 0;
-costEq = [];
-if nargout > 2
+%costEq = [];
+%if nargout > 2
+if nargout > 1
     grad = zeros( size(c) );
-    gradEq = [];
+    %gradEq = [];
 end
-%idx = 0;
+
 for i = 1:n
     % --- Define Cost ---
     % Recover "true" (experimental) value
@@ -261,7 +286,9 @@ for i = 1:n
             dTrnErr = dd_eEst2eTru;
             % Combine gradient errors
             dErr = dRotErr + repmat(dTrnErr,1,size(dRotErr,2));
-            grad(k) = grad(k) + diag( dErr*err.' + err*dErr.' )/n;
+            grad(k) =...
+                grad(k) +...
+                sum( diag( dErr*diag(err).' + diag(err)*dErr.' ) )/n;
         end
     end
 end
@@ -295,10 +322,93 @@ for i = 1:n
     err_ALL = sum(err);
 end
 
+clearvars err
 err.Mean = mean(err_ALL);
 err.Max = max(err_ALL);
 err.Min = min(err_ALL);
 err.STD  = std(err_ALL);
 err.Variance = var(err_ALL);
+
+end
+
+function stop = statusPlot(~,optimValues,state,method)%,varargin)
+
+persistent obj
+
+% optimValues
+% state
+% for i = 1:numel(varargin)
+%     varargin{i}
+% end
+% method = 'q';
+
+stop = false;
+
+if isempty(obj)
+    % Create figure, axes, etc
+    obj.Figure = figure('Name','Optimization Cost','NumberTitle','off',...
+        'ToolBar','none','MenuBar','None');
+    obj.Axes = axes('Parent',obj.Figure);
+    hold(obj.Axes,'on');
+    obj.Line_q = plot(obj.Axes,nan,nan,'g','tag','disable');
+    obj.Line_c = plot(obj.Axes,nan,nan,'b','tag','disable');
+end
+
+switch state
+    case 'iter'
+        switch lower(method)
+            case 'q'
+                x = get(obj.Line_q,'XData');
+                y = get(obj.Line_q,'YData');
+
+                switch lower( get(obj.Line_q,'Tag') )
+                    case 'disable'
+                        x(end+1) = nan;
+                        y(end+1) = nan;
+                        i0 = find(~isnan(x),1,'last');
+                        if ~isempty(i0)
+                            x0 = x(i0);
+                        else
+                            x0 = 0;
+                        end
+                    case 'enable'
+                        % plot is already enabled
+                    otherwise
+                        error('Unexpected tag: %s',get(obj.Line_q,'Tag'));
+                end
+                set(obj.Line_q,'Tag','enable');
+                set(obj.Line_c,'Tag','disable');
+
+                x(end+1) = x0 + optimValues.iteration;
+                y(end+1) = optimValues.fval;
+            case 'c'
+                x = get(obj.Line_c,'XData');
+                y = get(obj.Line_c,'YData');
+
+                switch lower( get(obj.Line_c,'Tag') )
+                    case 'disable'
+                        x(end+1) = nan;
+                        y(end+1) = nan;
+                        i0 = find(~isnan(x),1,'last');
+                        if ~isempty(i0)
+                            x0 = x(i0);
+                        else
+                            x0 = 0;
+                        end
+                    case 'enable'
+                        % plot is already enabled
+                    otherwise
+                        error('Unexpected tag: %s',get(obj.Line_q,'Tag'));
+                end
+                set(obj.Line_q,'Tag','disable');
+                set(obj.Line_c,'Tag','enable');
+
+                x(end+1) = x0 + optimValues.iteration;
+                y(end+1) = optimValues.fval;
+            otherwise
+                error('Unexpected method: "%s"',method);
+        end
+        drawnow
+end
 
 end
