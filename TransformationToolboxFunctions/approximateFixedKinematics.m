@@ -102,8 +102,8 @@ J_co = calculateJacobian(c,H_e2o_sym,'Constants',q,...
 %    'SpecifyObjectiveGradient',true,'HessianFcn','objective');
 fOptions_q = optimoptions(@fmincon,'Algorithm','trust-region-reflective',...
     'SpecifyObjectiveGradient',true,'CheckGradients',false,...
-    'Display','off',...
-    'PlotFcn',@(x,optimValues,state)statusPlot(x,optimValues,state,'q'));
+    'Display','off','PlotFcn',@statusPlot);%...
+    %'PlotFcn',@(x,optimValues,state)statusPlot(x,optimValues,state,'q'));
 fOptions_c = optimoptions(@fmincon,'Algorithm','trust-region-reflective',...
     'SpecifyObjectiveGradient',true,'CheckGradients',false,...
     'Display','off',...
@@ -331,28 +331,28 @@ err.Variance = var(err_ALL);
 
 end
 
-function stop = statusPlot(~,optimValues,state,method)%,varargin)
+function stop = statusPlot(~,optimValues,state,varargin)
 
 persistent obj
 
-% optimValues
-% state
-% for i = 1:numel(varargin)
-%     varargin{i}
-% end
-% method = 'q';
+optimValues
+state
+for i = 1:numel(varargin)
+    varargin{i}
+end
+method = 'q';
 
 stop = false;
 
-if isempty(obj)
-    % Create figure, axes, etc
-    obj.Figure = figure('Name','Optimization Cost','NumberTitle','off',...
-        'ToolBar','none','MenuBar','None');
-    obj.Axes = axes('Parent',obj.Figure);
-    hold(obj.Axes,'on');
-    obj.Line_q = plot(obj.Axes,nan,nan,'g','tag','disable');
-    obj.Line_c = plot(obj.Axes,nan,nan,'b','tag','disable');
-end
+% if isempty(obj)
+%     % Create figure, axes, etc
+%     obj.Figure = figure('Name','Optimization Cost','NumberTitle','off',...
+%         'ToolBar','none','MenuBar','None');
+%     obj.Axes = axes('Parent',obj.Figure);
+%     hold(obj.Axes,'on');
+%     obj.Line_q = plot(obj.Axes,nan,nan,'g','tag','disable');
+%     obj.Line_c = plot(obj.Axes,nan,nan,'b','tag','disable');
+% end
 
 switch state
     case 'iter'
@@ -409,6 +409,11 @@ switch state
                 error('Unexpected method: "%s"',method);
         end
         drawnow
+    case 'init'
+        % Initialize the figure?
+        drawnow
+        
+
 end
 
 end
