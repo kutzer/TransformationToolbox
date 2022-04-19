@@ -100,10 +100,13 @@ J_co = calculateJacobian(c,H_e2o_sym,'Constants',q,...
 % Optimization options
 %fOptions = optimoptions(@fminunc,'Algorithm','trust-region',...
 %    'SpecifyObjectiveGradient',true,'HessianFcn','objective');
-fOptions_q = optimoptions(@fmincon,'Algorithm','trust-region-reflective',...
-    'SpecifyObjectiveGradient',true,'CheckGradients',false,...
-    'Display','off','PlotFcn',@statusPlot);%...
-    %'PlotFcn',@(x,optimValues,state)statusPlot(x,optimValues,state,'q'));
+% fOptions_q = optimoptions(@fmincon,'Algorithm','trust-region-reflective',...    
+%     'SpecifyObjectiveGradient',true,'CheckGradients',false,...
+%     'Display','off',...
+%     'PlotFcn',@(x,optimValues,state)statusPlot(x,optimValues,state,'q'));
+fOptions_q = optimoptions(@fmincon,'Algorithm','interior-point',...    
+    'Display','off',...
+    'PlotFcn',@(x,optimValues,state)statusPlot(x,optimValues,state,'q'));
 fOptions_c = optimoptions(@fmincon,'Algorithm','trust-region-reflective',...
     'SpecifyObjectiveGradient',true,'CheckGradients',false,...
     'Display','off',...
@@ -137,19 +140,49 @@ q = q0;
 c = c0;
 
 % Loop through q-minimization/c-minimization until... TBD stop condition
+fig = figure('Name','Optimization');
+axs = axes('Parent',fig);
+hold(axs,'on');
+plt = plot(axs,nan,nan,'k');
+plt_q = plot(axs,nan,nan,'dg');
+plt_c = plot(axs,nan,nan,'ob');
+
+x = [];
+y = [];
+y_q = [];
+y_c = [];
 iter = 0;
 while true
     fcost_q = @(q)cost_q(q,a,c,fcnH_e2o,J_qo,H_e2o_ALL,options.RotationWeight);
     [q,fval,exitflag,output] = fmincon(fcost_q,q,[],[],[],[],q_lb,q_ub,[],fOptions_q);
+    iter = iter + 0.5;
+    x(end+1) = iter;
+    y(end+1) = fval;
+    y_q(end+1) = fval;
+    y_c(end+1) = nan;
+    
+    set(plt,'XData',x,'YData',y);
+    set(plt_q,'XData',x,'YData',y_q);
+    set(plt_c,'XData',x,'YData',y_c);
 
     fcost_c = @(c)cost_c(q,a,c,fcnH_e2o,J_co,H_e2o_ALL,options.RotationWeight);
     [c,fval,exitflag,output] = fmincon(fcost_c,c,[],[],[],[],c_lb,c_ub,[],fOptions_c);
-    iter = iter+1;
+    iter = iter + 0.5;
+    x(end+1) = iter;
+    y(end+1) = fval;
+    y_q(end+1) = nan;
+    y_c(end+1) = fval;
 
-    if iter == 3
+    set(plt,'XData',x,'YData',y);
+    set(plt_q,'XData',x,'YData',y_q);
+    set(plt_c,'XData',x,'YData',y_c);
+
+    if iter == 1000
         break
     end
 end
+obj.Figure = findobj('Type','figure','Name','Optimization Plot Function');
+delete(obj.Figure);
 
 %% Package outputs
 [err,q,c] = errStats(q,a,c,fcnH_e2o,H_e2o_ALL,options.RotationWeight);
@@ -331,28 +364,55 @@ err.Variance = var(err_ALL);
 
 end
 
-function stop = statusPlot(~,optimValues,state,varargin)
+function stop = statusPlot(~,optimValues,state,method)%varargin)
 
 persistent obj
 
-optimValues
-state
-for i = 1:numel(varargin)
-    varargin{i}
-end
-method = 'q';
+% optimValues
+% state
+% for i = 1:numel(varargin)
+%     varargin{i}
+% end
 
 stop = false;
 
-% if isempty(obj)
-%     % Create figure, axes, etc
-%     obj.Figure = figure('Name','Optimization Cost','NumberTitle','off',...
-%         'ToolBar','none','MenuBar','None');
-%     obj.Axes = axes('Parent',obj.Figure);
-%     hold(obj.Axes,'on');
-%     obj.Line_q = plot(obj.Axes,nan,nan,'g','tag','disable');
-%     obj.Line_c = plot(obj.Axes,nan,nan,'b','tag','disable');
-% end
+% Populate obj
+if isempty(obj)
+    % Create figure, axes, etc
+    %obj.Figure = figure('Name','Optimization Cost','NumberTitle','off',...
+    %    'ToolBar','none','MenuBar','None');
+    %obj.Axes = axes('Parent',obj.Figure);
+    
+    obj.Figure = findobj('Type','figure','Name','Optimization Plot Function');
+    obj.Axes = findobj('Type','axes','Parent',obj.Figure);
+    hold(obj.Axes,'on');
+    obj.Line_q = plot(obj.Axes,nan,nan,'g','tag','disable');
+    obj.Line_c = plot(obj.Axes,nan,nan,'b','tag','disable');
+end
+
+% Populate objects
+if ~ishandle(obj.Figure)
+    obj.Figure = findobj('Type','figure','Name','Optimization Plot Function');
+    obj.Axes = findobj('Type','axes','Parent',obj.Figure);
+    hold(obj.Axes,'on');
+    obj.Line_q = plot(obj.Axes,nan,nan,'g','tag','disable');
+    obj.Line_c = plot(obj.Axes,nan,nan,'b','tag','disable');
+end
+
+if ~ishandle(obj.Axes)
+    obj.Axes = findobj('Type','axes','Parent',obj.Figure);
+    hold(obj.Axes,'on');
+    obj.Line_q = plot(obj.Axes,nan,nan,'g','tag','disable');
+    obj.Line_c = plot(obj.Axes,nan,nan,'b','tag','disable');
+end
+
+if ~ishandle(obj.Line_q)
+    obj.Line_q = plot(obj.Axes,nan,nan,'g','tag','disable');
+end
+
+if ~ishandle(obj.Line_c)
+    obj.Line_c = plot(obj.Axes,nan,nan,'b','tag','disable');
+end
 
 switch state
     case 'iter'
@@ -360,17 +420,11 @@ switch state
             case 'q'
                 x = get(obj.Line_q,'XData');
                 y = get(obj.Line_q,'YData');
-
+                
                 switch lower( get(obj.Line_q,'Tag') )
                     case 'disable'
                         x(end+1) = nan;
                         y(end+1) = nan;
-                        i0 = find(~isnan(x),1,'last');
-                        if ~isempty(i0)
-                            x0 = x(i0);
-                        else
-                            x0 = 0;
-                        end
                     case 'enable'
                         % plot is already enabled
                     otherwise
@@ -379,8 +433,17 @@ switch state
                 set(obj.Line_q,'Tag','enable');
                 set(obj.Line_c,'Tag','disable');
 
+                i0 = find(~isnan(x),1,'last');
+                if ~isempty(i0)
+                    x0 = x(i0);
+                else
+                    x0 = 0;
+                end
+
                 x(end+1) = x0 + optimValues.iteration;
                 y(end+1) = optimValues.fval;
+
+                set(obj.Line_q,'XData',x,'YData',y);
             case 'c'
                 x = get(obj.Line_c,'XData');
                 y = get(obj.Line_c,'YData');
@@ -389,26 +452,32 @@ switch state
                     case 'disable'
                         x(end+1) = nan;
                         y(end+1) = nan;
-                        i0 = find(~isnan(x),1,'last');
-                        if ~isempty(i0)
-                            x0 = x(i0);
-                        else
-                            x0 = 0;
-                        end
+
                     case 'enable'
                         % plot is already enabled
                     otherwise
                         error('Unexpected tag: %s',get(obj.Line_q,'Tag'));
                 end
+
                 set(obj.Line_q,'Tag','disable');
                 set(obj.Line_c,'Tag','enable');
 
+                i0 = find(~isnan(x),1,'last');
+                if ~isempty(i0)
+                    x0 = x(i0);
+                else
+                    x0 = 0;
+                end
+
                 x(end+1) = x0 + optimValues.iteration;
                 y(end+1) = optimValues.fval;
+
+                set(obj.Line_c,'XData',x,'YData',y);
             otherwise
                 error('Unexpected method: "%s"',method);
         end
         drawnow
+
     case 'init'
         % Initialize the figure?
         drawnow
