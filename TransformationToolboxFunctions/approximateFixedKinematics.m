@@ -95,6 +95,8 @@ J_qo = calculateJacobian(q,H_e2o_sym,'Constants',c,...
     'Order','RotationTranslation','Reference','Base');
 J_co = calculateJacobian(c,H_e2o_sym,'Constants',q,...
     'Order','RotationTranslation','Reference','Base');
+J_qco = calculateJacobian([q; c],H_e2o_sym,...
+    'Order','RotationTranslation','Reference','Base');
 
 %% Setup Optimization Parameters
 % Optimization options
@@ -111,6 +113,9 @@ fOptions_c = optimoptions(@fmincon,'Algorithm','trust-region-reflective',...
     'SpecifyObjectiveGradient',true,'CheckGradients',false,...
     'Display','off',...
     'PlotFcn',@(x,optimValues,state)statusPlot(x,optimValues,state,'c'));
+fOptions_qc = optimoptions(@fmincon,'Algorithm','interior-point',...    
+    'Display','off',...
+    'PlotFcn',@(x,optimValues,state)statusPlot(x,optimValues,state,'q'));
 
 % Optimization parameters
 N = numel(H_e2o_ALL);
@@ -129,6 +134,11 @@ c0   = reshape(c0  ,1,[]);
 c_lb = reshape(c_lb,1,[]);
 c_ub = reshape(c_ub,1,[]);
 
+% Define combine parameters
+qc0 = [q0, c0];
+qc_lb = [q_lb, c_lb];
+qc_ub = [q_ub, c_ub];
+
 % Optimization functions
 %fcost_q = @(q_ALL)cost_q(q_ALL,a,c,fcnH_e2o,J_qo,H_e2o_ALL,options.RotationWeight);
 %fcost_c = @(c)cost_c(q_ALL,a,c,fcnH_e2o,J_co,H_e2o_ALL,options.RotationWeight);
@@ -146,36 +156,64 @@ hold(axs,'on');
 plt = plot(axs,nan,nan,'k');
 plt_q = plot(axs,nan,nan,'dg');
 plt_c = plot(axs,nan,nan,'ob');
-
+plt_qc = plot(axs,nan,nan,'sr');
 x = [];
 y = [];
 y_q = [];
 y_c = [];
+y_qc = [];
+
 iter = 0;
 while true
+    % --- q ---
     fcost_q = @(q)cost_q(q,a,c,fcnH_e2o,J_qo,H_e2o_ALL,options.RotationWeight);
     [q,fval,exitflag,output] = fmincon(fcost_q,q,[],[],[],[],q_lb,q_ub,[],fOptions_q);
-    iter = iter + 0.5;
+    iter = iter + (1/3);
     x(end+1) = iter;
     y(end+1) = fval;
     y_q(end+1) = fval;
     y_c(end+1) = nan;
-    
+    y_qc(end+1) = nan;
+
     set(plt,'XData',x,'YData',y);
     set(plt_q,'XData',x,'YData',y_q);
     set(plt_c,'XData',x,'YData',y_c);
+    set(plt_qc,'XData',x,'YData',y_qc);
 
+    % --- c ---
     fcost_c = @(c)cost_c(q,a,c,fcnH_e2o,J_co,H_e2o_ALL,options.RotationWeight);
     [c,fval,exitflag,output] = fmincon(fcost_c,c,[],[],[],[],c_lb,c_ub,[],fOptions_c);
-    iter = iter + 0.5;
+    iter = iter + (1/3);
     x(end+1) = iter;
     y(end+1) = fval;
     y_q(end+1) = nan;
     y_c(end+1) = fval;
+    y_qc(end+1) = nan;
 
     set(plt,'XData',x,'YData',y);
     set(plt_q,'XData',x,'YData',y_q);
     set(plt_c,'XData',x,'YData',y_c);
+    set(plt_qc,'XData',x,'YData',y_qc);
+
+    % --- qc ---
+    qc = [q,c];
+    fcost_qc = @(qc)cost_qc(qc,a,b,fcnH_e2o,J_qco,H_e2o_ALL,options.RotationWeight);
+    [qc,fval,exitflag,output] = fmincon(fcost_qc,qc,[],[],[],[],qc_lb,qc_ub,[],fOptions_qc);
+    iter = iter + (1/3);
+    x(end+1) = iter;
+    y(end+1) = fval;
+    y_q(end+1) = nan;
+    y_c(end+1) = fval;
+    y_qc(end+1) = nan;
+
+    set(plt,'XData',x,'YData',y);
+    set(plt_q,'XData',x,'YData',y_q);
+    set(plt_c,'XData',x,'YData',y_c);
+    set(plt_qc,'XData',x,'YData',y_qc);
+    
+    c = qc( (end-b+1:end) );
+    q = qc( 1:(end-b) );
+
 
     if iter == 1000
         break
@@ -328,6 +366,84 @@ end
 cost = cost/n;
 end
 
+
+function [cost,grad] = cost_qc(qc_ALL,a,b,fcnH_e2o,J_qco,H_e2o_ALL,rw)
+% Parse input
+c = qc_ALL( (end-b+1:end) );
+q_ALL = qc_ALL( 1:(end-b) );
+% Reshape inputs
+q_ALL = reshape(q_ALL,a,[]);
+c = reshape(c,[],1);
+% Calculate forward kinematics & estimate error
+n = size(q_ALL,2);
+cost = 0;
+%costEq = [];
+%if nargout > 2
+if nargout > 1
+    grad = zeros( size(qc_ALL) );
+    %gradEq = [];
+end
+
+for i = 1:n
+    % --- Define Cost ---
+    % Recover "true" (experimental) value
+    H_eTru2o = H_e2o_ALL{i};
+    H_o2eTru = invSE(H_eTru2o);
+    % Recover "estimated" value
+    H_eEst2o = fcnH_e2o(q_ALL(:,i),c);
+    % Estimate error
+    H_eEst2eTru = H_o2eTru*H_eEst2o;
+    % Recover rotation & translation errors
+    R_eEst2eTru = H_eEst2eTru(1:(end-1),1:(end-1));
+    d_eEst2eTru = H_eEst2eTru(1:(end-1),end);
+    rotErr = rw*R_eEst2eTru;
+    trnErr = d_eEst2eTru;
+    % Combine errors
+    err = rotErr + repmat(trnErr,1,size(rotErr,2));
+
+    err = diag( err*err.' );
+    cost = cost + sum(err);
+
+    % --- Define Gradient ---
+    %if nargout > 2
+    if nargout > 1
+        J = J_qco([q_ALL(:,i); c]);
+        for k = 1:size(J,2)
+            v = J(:,k);
+            % TODO - expand to include SE(N), current is SE(3)
+            % Derivative term (referenced to base)
+            dR_eEst2o = expSO( wedge(v(1:3,1)));
+            dd_eEst2o = v(4:6,1);
+            dH_eEst2o = zeros(4);
+            dH_eEst2o(1:3,1:3) = dR_eEst2o;
+            dH_eEst2o(1:3,4) = dd_eEst2o;
+            % Derivative term (referenced to eTru)
+            dH_eEst2eTru = H_o2eTru*dH_eEst2o;
+            % Recover rotation & translation gradient errors
+            dR_eEst2eTru = dH_eEst2eTru(1:(end-1),1:(end-1));
+            dd_eEst2eTru = dH_eEst2eTru(1:(end-1),end);
+            dRotErr = rw*dR_eEst2eTru;
+            dTrnErr = dd_eEst2eTru;
+            % Combine gradient errors
+            dErr = dRotErr + repmat(dTrnErr,1,size(dRotErr,2));
+
+            grad(k,i) =...
+                grad(k,i) +...
+                sum( diag( dErr*diag(err).' + diag(err)*dErr.' ) )/n;
+        end
+    end
+end
+cost = cost/n;
+
+% Reshape gradient for fmincon
+%if nargout > 2
+if nargout > 1
+    grad = reshape(grad,1,[]);
+end
+
+end
+
+
 function [err,q_ALL,c] = errStats(q_ALL,a,c,fcnH_e2o,H_e2o_ALL,rw)
 % Reshape input(s)
 q_ALL = reshape(q_ALL,a,[]);
@@ -363,6 +479,8 @@ err.STD  = std(err_ALL);
 err.Variance = var(err_ALL);
 
 end
+
+
 
 function stop = statusPlot(~,optimValues,state,method)%varargin)
 
@@ -444,7 +562,8 @@ switch state
                 y(end+1) = optimValues.fval;
 
                 set(obj.Line_q,'XData',x,'YData',y);
-            case 'c'
+            %case 'c'
+            otherwise
                 x = get(obj.Line_c,'XData');
                 y = get(obj.Line_c,'YData');
 
@@ -473,16 +592,16 @@ switch state
                 y(end+1) = optimValues.fval;
 
                 set(obj.Line_c,'XData',x,'YData',y);
-            otherwise
-                error('Unexpected method: "%s"',method);
+            %otherwise
+            %    error('Unexpected method: "%s"',method);
         end
         drawnow
 
     case 'init'
         % Initialize the figure?
         drawnow
-        
-
+    otherwise
+        fprintf('%s, %s\n',state,method);
 end
 
 end
