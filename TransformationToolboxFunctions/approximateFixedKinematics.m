@@ -115,7 +115,7 @@ fOptions_c = optimoptions(@fmincon,'Algorithm','trust-region-reflective',...
     'PlotFcn',@(x,optimValues,state)statusPlot(x,optimValues,state,'c'));
 fOptions_qc = optimoptions(@fmincon,'Algorithm','interior-point',...    
     'Display','off',...
-    'PlotFcn',@(x,optimValues,state)statusPlot(x,optimValues,state,'q'));
+    'PlotFcn',@(x,optimValues,state)statusPlot(x,optimValues,state,'qc'));
 
 % Optimization parameters
 N = numel(H_e2o_ALL);
@@ -154,9 +154,9 @@ fig = figure('Name','Optimization');
 axs = axes('Parent',fig);
 hold(axs,'on');
 plt = plot(axs,nan,nan,'k');
-plt_q = plot(axs,nan,nan,'dg');
-plt_c = plot(axs,nan,nan,'ob');
-plt_qc = plot(axs,nan,nan,'sr');
+plt_q = plot(axs,nan,nan,'.g');
+plt_c = plot(axs,nan,nan,'.b');
+plt_qc = plot(axs,nan,nan,'.r');
 x = [];
 y = [];
 y_q = [];
@@ -203,8 +203,8 @@ while true
     x(end+1) = iter;
     y(end+1) = fval;
     y_q(end+1) = nan;
-    y_c(end+1) = fval;
-    y_qc(end+1) = nan;
+    y_c(end+1) = nan;
+    y_qc(end+1) = fval;
 
     set(plt,'XData',x,'YData',y);
     set(plt_q,'XData',x,'YData',y_q);
@@ -605,3 +605,24 @@ switch state
 end
 
 end
+
+% Error using matlab.graphics.axis.Axes/set
+% The UIContextMenu's parent figure is not the same as the parent figure of this object.
+% 
+% Error in callAllOptimPlotFcns (line 128)
+%         set(handle,'UIContextMenu', cmenu);
+% 
+% Error in barrier
+% 
+% Error in barrier
+% 
+% Error in barrier
+% 
+% Error in fmincon (line 862)
+%     [X,FVAL,EXITFLAG,OUTPUT,LAMBDA,GRAD,HESSIAN] = barrier(funfcn,X,A,B,Aeq,Beq,l,u,confcn,options.HessFcn, ...
+% 
+% Error in approximateFixedKinematics (line 170)
+%     [q,fval,exitflag,output] = fmincon(fcost_q,q,[],[],[],[],q_lb,q_ub,[],fOptions_q);
+% 
+% Error in SCRIPT_approximateFixedKinematics (line 29)
+% [c,q,err] = approximateFixedKinematics(fcnH_e2o,H_e2o_ALL,options);
