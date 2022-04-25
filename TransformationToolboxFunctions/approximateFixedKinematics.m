@@ -16,7 +16,7 @@ function [c,q,err] = approximateFixedKinematics(fcnH_e2o,H_e2o_ALL,options)
 %       options   - structured array containing options for approximating
 %           *.qLims          - ax2 array containing lower/upper bounds of
 %                              joint values
-%           *.q0             - ax1 array containing initial joint values
+%           *.q0             - axM array containing initial joint values
 %           *.cLims          - bx2 array containing lower/upper bounds of
 %                              kinematic constants
 %           *.c0             - bx1 array containing initial values of
@@ -44,6 +44,9 @@ function [c,q,err] = approximateFixedKinematics(fcnH_e2o,H_e2o_ALL,options)
 %
 %   M. Kutzer, 12Apr2022, USNA
 
+% Updates
+%   25Apr2022 - q0 is now axM for M-element H_e2o_ALL
+
 %% Check input(s)
 narginchk(3,3);
 fields = {'qLims','q0','cLims','c0','RotationWeight'};
@@ -56,10 +59,16 @@ if nnz(bin) ~= numel(fields)
 end
 
 % Check for correct sizes
-a = numel(options.q0);
+M = numel(H_e2o_ALL);
+a = size(options.q0,1);
+if M ~= size(options.q0,2)
+    error('"options.q0" must contain %d columns given %d elements of "H_e2o_ALL',...
+        M,M);
+end
+
 if size(options.qLims,1) ~= a || size(options.qLims,2) ~= 2
-    error('"options.qLims" must be %dx2 given a %dx1 value for "options.q0"',...
-        a,a);
+    error('"options.qLims" must be %dx2 given a %dx%d value for "options.q0"',...
+        a,a,M);
 end
 
 b = numel(options.c0);
@@ -118,10 +127,11 @@ fOptions_qc = optimoptions(@fmincon,'Algorithm','interior-point',...
     'PlotFcn',@(x,optimValues,state)statusPlot(x,optimValues,state,'qc'));
 
 % Optimization parameters
-N = numel(H_e2o_ALL);
-q0   = repmat(options.q0,1,N);
-q_lb = repmat(options.qLims(:,1),1,N);
-q_ub = repmat(options.qLims(:,2),1,N);
+%M = numel(H_e2o_ALL);
+%q0   = repmat(options.q0,1,M); % TODO: consider implementing if q0 has 1 column
+q0 = options.q0;
+q_lb = repmat(options.qLims(:,1),1,M);
+q_ub = repmat(options.qLims(:,2),1,M);
 c0   = options.c0;
 c_lb = options.cLims(:,1);
 c_ub = options.cLims(:,2);
