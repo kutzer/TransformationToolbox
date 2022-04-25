@@ -74,7 +74,7 @@ end
 b = numel(options.c0);
 if size(options.cLims,1) ~= b || size(options.cLims,2) ~= 2
     error('"options.cLims" must be %dx2 given a %dx1 value for "options.c0"',...
-        a,a);
+        b,b);
 end
 
 % Check forward kinematics function
