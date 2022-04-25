@@ -25,6 +25,7 @@ function setTriad(h,varargin)
 
 % Updates:
 %   13Jul2020 - Corrected scaling update. 
+%   25Apr2022 - Added AxisLabels 
 
 %% Get triad axes
 [bin,kAxesALL,kLabelsALL] = isTriad(h);
@@ -102,6 +103,42 @@ for i = 1:numel(bin)
                 set(h,varargin{j},varargin{j+1});
             case 'visible'
                 set(kAxes,'Visible','off');
+            case 'axislabels'
+                axislabels = varargin{j+1};
+                if numel(axislabels) ~= numel(kAxes)
+                    error('An axis label must be specified for each axis.')
+                end
+                if ~iscell(axislabels)
+                    error('Axis labels must be specified as a 1x3 cell array.');
+                end
+                
+                if isempty(kLabels)
+                    for k = 1:numel(kAxes)
+                        txt(k) = text('Parent',h(i));
+                    end
+                else
+                    txt = kLabels;
+                end
+                
+                axislabel_tags = {'X-Label','Y-Label','Z-Label'};
+                for k = 1:numel(axislabels)
+                    % Convert label to string argument
+                    if ~ischar(axislabels{k})
+                        axislabels{i} = num2str(axislabels{k});
+                    end
+                    % Apply label
+                    xdata = get(kAxes(k),'XData');
+                    ydata = get(kAxes(k),'YData');
+                    zdata = get(kAxes(k),'ZData');
+                    txt(k) = text(xdata(end),ydata(end),zdata(end),axislabels{k});
+                    set(txt(k),'Parent',h(i),...
+                        'HorizontalAlignment','Left',...
+                        'VerticalAlignment','Bottom',...
+                        'Color',[0 0 0],...
+                        'FontName','Helvetica',...
+                        'FontSize',10,...
+                        'Tag',axislabel_tags{k});
+                end
             otherwise
                 % TODO - add check for properties in line or hgtransform, and
                 % update property accordingly.
