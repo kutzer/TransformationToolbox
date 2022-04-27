@@ -50,7 +50,8 @@ function funcJ = calculateJacobian(q,H_e2o,varargin)
 %   28Feb2022 - Documentation update and added comments for saved function
 %   03Mar2022 - Added showStatus input option
 %   12Apr2022 - Added support of symbolic constant kinematic terms
-
+%   27Apr2022 - Added symbolic constant kinematic terms to saved function
+%               option
 %% Check inputs
 if nargin < 2
     error('Both "H_e2o" and "q" must be specified.')
@@ -304,8 +305,13 @@ if ~isempty(filename)
     
     % Save function
     fprintf('Saving function "%s.m" to Current Directory...',filename);
-    funcJ = matlabFunction(J,'file',filename,'vars',{q},...
-        'Comments',sprintf('calculateJacobian: %s-referenced, %s',ref,jStack));
+    if ~isempty(c)
+        funcJ = matlabFunction(J,'file',filename,'vars',{q,c},...
+            'Comments',sprintf('calculateJacobian: %s-referenced, %s',ref,jStack));
+    else
+        funcJ = matlabFunction(J,'file',filename,'vars',{q},...
+            'Comments',sprintf('calculateJacobian: %s-referenced, %s',ref,jStack));
+    end
     % TODO - updated to include detailed comments if/when matlabFunction.m
     %        improves support
     %funcJ = matlabFunction(J,'file',filename,'vars',{q},...
