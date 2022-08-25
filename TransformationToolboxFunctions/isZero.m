@@ -9,6 +9,8 @@ function bin = isZero(M,ZERO)
 %   value is specified using the class of M and the spacing of floating
 %   point numbers for that associated class (using eps.m).
 %
+%   Note: NaN values are treated as non-zero
+%
 %   bin = ISZERO(___)
 %
 %   Input(s)
@@ -29,6 +31,7 @@ function bin = isZero(M,ZERO)
 %   22Jan2016 - Updated to speed up checking matrices
 %   18Nov2021 - Added optional ZERO input
 %   18Nov2021 - Updated documentation
+%   25Aug2022 - Updated to account for NaN values
 
 %% Set default zero
 defaultZERO = 10*eps(class(M));
@@ -39,8 +42,12 @@ if isempty(ZERO)
     ZERO = defaultZERO;
 end
 
-%% Check if a matrix is effectively zero
+%% Check if a matrix is effectively zero or NaN
+% Check for values that are effectively zero
 BIN = abs(M) > ZERO;
+% Check for nan values
+BIN = BIN | isnan(M);
+
 if nnz(BIN) > 0
     bin = 0;
 else
