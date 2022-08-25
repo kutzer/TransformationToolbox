@@ -35,11 +35,12 @@ function varargout = TransformationToolboxVer
 %   03Mar2022 - Added limitVector and numericIkin functions
 %   03Mar2022 - Added showStatus option to calculateJacobian
 %   25Apr2022 - Added AxesLabels "property" to setTriad
+%   25Aug2022 - Accounted for NaN values in isZero
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.14';
+A.Version = '1.1.15';
 A.Release = '(R2019b)';
-A.Date = '25-Apr-2022';
+A.Date = '25-Aug-2022';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
