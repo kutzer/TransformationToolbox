@@ -9,17 +9,26 @@ function muH = meanSE(H,varargin)
 %
 %   muH = MEANSE(H,tf,ZERO)
 %
+%   muH = MEANSE(__,METHOD)
+%
 %   Input(s)
-%       H    - n-element cell array containing rigid body transformations
-%              H{i} \in SE(M) - ith sample
-%       tf   - true/false value indicating whether or not an error should
-%              be thrown if one or more elements of H are not valid 
-%              elements of SE(N).
-%                   tf = [true] - Throw an error if H{i} \notin SE(N)
-%                   tf = false  - Warn, but do not throw an error
-%       ZERO - positive value that is sufficiently close to zero to be
-%              assumed zero (e.g. ZERO = 1e-8). If ZERO is not specified or
-%              if ZERO = [], a default value is used.
+%       H      - n-element cell array containing rigid body transformations
+%                H{i} \in SE(M) - ith sample
+%       tf     - true/false logical value indicating whether or not an  
+%                error should be thrown if one or more elements of H are  
+%                not valid elements of SE(N).
+%                   tf = true    - Throw an error if H{i} \notin SE(N)
+%                   tf = [false] - Warn, but do not throw an error
+%       ZERO   - positive value that is sufficiently close to zero to be
+%                or assumed zero (e.g. ZERO = 1e-8). If ZERO is not  
+%                specified if ZERO = [], a default value is used.
+%       *METHOD - {['Coupled'],'Decoupled'} character array specifying 
+%                method for calculating the mean.
+%                     'Coupled' - follows [1] finding the mean of the 
+%                                 banana distribution
+%                   'Decoupled' - finds the rotational mean independent of
+%                                 the position mean 
+%   * INCOMPLETE
 %
 %   Output(s)
 %       muH - (M+1)x(M+1) array containing the mean of transformations such
@@ -44,41 +53,53 @@ function muH = meanSE(H,varargin)
 %   22Nov2021 - Fixed varargin{1} error
 %   30Nov2021 - Special case for 2-transformation mean
 %   10Mar2022 - Added else for islogical(varargin{1}) 
-
+%   01Sep2022 - Added coupled/decoupled option and revised parsing of
+%               optional inputs 
 %% Check Inputs
-narginchk(1,3);
+narginchk(1,4);
 
-if nargin < 2
-    tf = false;
-    ZERO = [];
-end
+% Set defaults
+tf = false;
+ZERO = [];
+METHOD = 'Coupled';
 
-if nargin == 2
-    % muH = MEANSE(H,tf)
-    % muH = MEANSE(H,ZERO)
-    if ~islogical(varargin{1})
-        % TODO - consider warning and/or enforcing use of logical tf
-        %        argument
-        if varargin{1} == 0 || varargin{1} == 1
-            tf = true;
-            ZERO = [];
-        else
-            tf = false;
-            ZERO = varargin{1};
+% Parse variable inputs
+if nargin > 1
+    for i = 1:numel(varargin)
+        switch lower( class(varargin{i} ))
+            case 'char'
+                METHOD = varargin{i};
+            case 'string'
+                METHOD = char( varargin{i} );
+            case 'logical'
+                tf = varargin{i};
+            otherwise
+                if numel(varargin{i}) ~= 1
+                    error('Numeric optional inputs must be scalar values.');
+                end
+
+                if varargin{i} == 0 || varargin{i} == 1
+                    tf = logical(varargin{i});
+                else
+                    ZERO = varargin{i};
+                end
         end
-    else
-        tf = varargin{1};
-        ZERO = [];
     end
 end
 
-if nargin == 3
-    % muH = MEANSE(H,tf,ZERO)
-    tf = varargin{1};
-    ZERO = varargin{2};
+% Check method
+switch lower(METHOD)
+    case 'coupled'
+        % Good
+    case 'decoupled'
+        % Good
+    otherwise
+        error('"%s" is not a valid method. Please use "Coupled" or "Decoupled".',METHOD);
 end
 
-% TODO - check tf value 
+if ZERO < 0
+    error('ZERO value must be greater or equal to 0.')
+end
 
 if ~iscell(H)
     error('Input must be defined as an N-element cell array.');
