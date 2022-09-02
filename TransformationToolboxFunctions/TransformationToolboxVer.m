@@ -36,11 +36,13 @@ function varargout = TransformationToolboxVer
 %   03Mar2022 - Added showStatus option to calculateJacobian
 %   25Apr2022 - Added AxesLabels "property" to setTriad
 %   25Aug2022 - Accounted for NaN values in isZero
+%   02Sep2022 - Removed SE(3) assumption and added coupled/decoupled
+%               options to meanSE
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.15';
+A.Version = '1.1.16';
 A.Release = '(R2019b)';
-A.Date = '25-Aug-2022';
+A.Date = '02-Sep-2022';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);

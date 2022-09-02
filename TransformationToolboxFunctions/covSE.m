@@ -34,6 +34,8 @@ function [SigmaH,muH] = covSE(varargin)
 %
 %   M. Kutzer, 04Jan2017, USNA
 
+% TODO - match the syntax of meanSE
+
 %% Check Inputs
 narginchk(1,2);
 
