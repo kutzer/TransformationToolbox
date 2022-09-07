@@ -1,13 +1,26 @@
-function [Axis,Angle] = SOtoAxisAngle(R)
+function [Axis,Angle] = SOtoAxisAngle(R,varargin)
 % SOtoAxisAngle converts a N-dimensional rotation matrix to to an 
 % axis/angle parameterization.
 %   [Axis,Angle] = SOtoAxisAngle(R)
-%   
+%
+%   [Axis,Angle] = SOtoAxisAngle(___,ZERO)
+%
+%   [Axis,Angle] = SOtoAxisAngle(___,fast)
+%
 %   Input(s)
 %       R - NxN element of SO(N)
-%
+%       ZERO - [OPTIONAL] positive value that is sufficiently close to zero
+%              or assumed zero (e.g. ZERO = 1e-8). If ZERO is not   
+%              specified, a default value is used.
+%       fast - [OPTIONAL] true/false logical value indicating whether to
+%              skip checking SO(N). Choosing fast = true ignores specified
+%              ZERO. 
+%                fast = true    - Skip checking if R \in SO(N)
+%                fast = [false] - Check if R \in SO(N)
 %   Output(s)
 %       Axis - scalar angle value in radians, Axis \in [0,\pi]
+%
+%   See also AxisAngletoSO logSO expSO logSE expSE
 %
 %   M. Kutzer 22Jan2016, USNA
 
@@ -17,19 +30,49 @@ function [Axis,Angle] = SOtoAxisAngle(R)
 %   26Jan2022 - Added increased "zero" value of 1e-8
 %   26Jan2022 - Replaced "vrrotmat2vec" with "rotm2axang" for SO(3)
 %   26Jan2022 - Added default axis for zero angle with SO(N) where N > 3
+%   06Sep2022 - Updated to include ZERO and fast optional inputs
 
 % TODO - address negative eigenvalue issues of logm for larger than 3x3
 
 %% Default options
 ZERO = 1e-8;
+fast = false;
 
 %% Check inputs
-narginchk(1,1);
-[bin,msg] = isSO(R,ZERO);
-if ~bin
-    warning('SOtoAxisAngle:NotSO',...
-        ['Input must be a valid n-dimensional rotation matrix.\n',...
-        ' -> %s'],msg);
+narginchk(1,3);
+
+if nargin > 1
+    for i = 1:numel(varargin)
+        switch lower( class(varargin{i} ))
+            case 'logical'
+                fast = varargin{i};
+            otherwise
+                if numel(varargin{i}) ~= 1
+                    error('Numeric optional inputs must be scalar values.');
+                end
+
+                if varargin{i} == 0 || varargin{i} == 1
+                    fast = logical(varargin{i});
+                else
+                    ZERO = varargin{i};
+                end
+        end
+    end
+end
+
+% Check zero
+if ZERO < 0
+    error('ZERO value must be greater or equal to 0.')
+end
+
+%% Check R
+if ~fast
+    [bin,msg] = isSO(R,ZERO);
+    if ~bin
+        warning('SOtoAxisAngle:NotSO',...
+            ['Input must be a valid n-dimensional rotation matrix.\n',...
+            ' -> %s'],msg);
+    end
 end
 
 %% Calculate axis angle
