@@ -3,11 +3,9 @@ function muH = meanSE(H,varargin)
 %   muH = MEANSE(H) approximates the mean of a sample of rigid body
 %   transformations defined as elements of an N-element cell array, H.
 %
-%   muH = MEANSE(H,throwErr)
+%   muH = MEANSE(__,throwErr)
 %
-%   muH = MEANSE(H,ZERO)
-%
-%   muH = MEANSE(H,throwErr,ZERO)
+%   muH = MEANSE(__,ZERO)
 %
 %   muH = MEANSE(__,METHOD)
 %
@@ -15,19 +13,19 @@ function muH = meanSE(H,varargin)
 %       H        - n-element cell array containing (N+1)x(N+1) array
 %                  elements of SE(N)
 %                  H{i} \in SE(N) - ith sample
-%       throwErr - true/false logical value indicating whether or not an  
-%                  error should be thrown if one or more elements of H are  
-%                  not valid elements of SE(N).
+%       throwErr - [OPTIONAL] true/false logical value indicating whether 
+%                  or not an error should be thrown if one or more elements 
+%                  of H are not valid elements of SE(N).
 %                    throwErr = true    - Throw an error if H{i} 
 %                                         \notin SE(N)
 %                    throwErr = [false] - Warn, but do not throw an error
-%       ZERO     - positive value that is sufficiently close to zero to be
-%                  or assumed zero (e.g. ZERO = 1e-8). If ZERO is not  
-%                  specified if ZERO = [], a default value is used.
-%       METHOD   - {['Coupled'],'Decoupled'} character array specifying 
-%                  method for calculating the mean.
-%                     'Coupled' - follows [1] finding the mean of the 
-%                                 banana distribution
+%       ZERO     - [OPTIONAL] positive value that is sufficiently close to 
+%                  zero or assumed zero (e.g. ZERO = 1e-8). If ZERO is not  
+%                  specified or ZERO = [], a default value is used.
+%       METHOD   - [OPTIONAL] character array specifying method for 
+%                  calculating the mean.
+%                     'Coupled' - [DEFAULT] follows [1] finding the mean of 
+%                                 the banana distribution
 %                   'Decoupled' - finds the rotational mean independent of
 %                                 the position mean 
 %
@@ -60,6 +58,11 @@ function muH = meanSE(H,varargin)
 
 %% Check Inputs
 narginchk(1,4);
+
+% Check H
+if ~iscell(H)
+    error('Input must be defined as an N-element cell array.');
+end
 
 % Set defaults
 throwErr = false;
@@ -103,10 +106,6 @@ end
 % Check zero
 if ZERO < 0
     error('ZERO value must be greater or equal to 0.')
-end
-
-if ~iscell(H)
-    error('Input must be defined as an N-element cell array.');
 end
 
 %% Check values H for valid SE(N)
