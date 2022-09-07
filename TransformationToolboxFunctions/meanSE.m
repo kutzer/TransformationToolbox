@@ -208,10 +208,9 @@ switch lower(METHOD)
         for i = 1:N
             D(:,i) = H{i}(1:(M-1),M);   % Isolate translation
             H{i}(1:(M-1),M) = 0;        % Isolate rotation
-
-            % Calculat translation mean
-            muD = mean(D,2);
         end
+        % Calculate translation mean
+        muD = mean(D,2);
 end
 
 %% Special case (2 transforms)
