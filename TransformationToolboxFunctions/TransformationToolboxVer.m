@@ -38,11 +38,12 @@ function varargout = TransformationToolboxVer
 %   25Aug2022 - Accounted for NaN values in isZero
 %   02Sep2022 - Removed SE(3) assumption and added coupled/decoupled
 %               options to meanSE
+%   07Sep2022 - Updated covSE, veeSE, invSE, etc to create common approach
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.16';
+A.Version = '1.1.17';
 A.Release = '(R2019b)';
-A.Date = '02-Sep-2022';
+A.Date = '07-Sep-2022';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
