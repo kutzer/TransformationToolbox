@@ -63,7 +63,7 @@ end
 
 % Set defaults
 throwErr = false;
-ZERO = [];
+ZERO = 1e-8;
 METHOD = 'Coupled';
 muH = [];
 
@@ -186,7 +186,10 @@ end
 
 %% Calculate mean (if not provided)
 if isempty(muH)
+    calcMu = true;
     muH = meanSE(H,throwErr,ZERO,METHOD);
+else
+    calcMu = false;
 end
 
 % TODO - check mean
@@ -196,25 +199,81 @@ if N < 0
     error('No valid elements of H present. Unable to calculate mean.');
 end
 
-% Initialize covariance
-M = numel( seBasis( dims(1)-1 ) );
-SigmaH = zeros(M);
-
+%% Get dimensions of H and initialize SigmaH
+% NOTE: From this point on, we will refer to elements of H as SE(M-1)
+M = size(H{1},1);       % Dimension of matrix
+n = M-1;                % SE(n)
+e = seBasis(n);         % Basis elements of se(n)
+m = numel(e);           % Number of basis elements of se(n)
+SigmaH = zeros(m,m);    % Initialize m x m covariance
+%% Check for special case - one element of H
 if N == 1
     fprintf('\nOne valid element of H, returning zero covariance value.\n');
     return
 end
 
+%% Account for coupled/decoupled method
+switch lower(METHOD)
+    case 'coupled'
+        % Do nothing
+    case 'decoupled'
+        % Isolate rotation and translation
+        D = zeros(M-1,N);
+        for i = 1:N
+            D(:,i) = H{i}(1:(M-1),M);   % Isolate translation
+            H{i}(1:(M-1),M) = 0;        % Isolate rotation
+        end
+        
+        % Calculate translation mean
+        %muD = mean(D,2);       % This is already provided/calculated
+        muD = muH(1:(M-1),M);   % Use provided/calculated mean
+        muH(1:(M-1),M) = 0;     % Zero translation
+
+        % Calculate translation covariance
+        SigmaD = cov( (D - repmat(muD,1,N)).' ).';
+end
 
 %% Calculate covariance
 fast = true;
 for i = 1:N
     try
         y_i = veeSE(logSE(invSE(muH,fast)*H{i},fast),fast);
-    catch 
-        invSE(muH)*H{i}
+    catch ME
+        fprintf('invSE(muH,fast)*H{%d} = \n',i)
+        disp(invSE(muH,fast)*H{i});
+        msg = springf('Issue calculating y_{%d}:\n\n%s',i,ME.message);
+        error(msg);
         break
     end
     SigmaH = SigmaH + y_i*transpose(y_i);
 end
 SigmaH = (1/N) * SigmaH;
+
+% Apply decoupled method
+switch lower(METHOD)
+    case 'decoupled'
+        % Replace translation in mean
+        muH(1:(M-1),M) = muD;
+
+        % Place translation covariance elements 
+        n = M-1;        % SE(n)
+        e = seBasis(n); % Basis elements of se(n)
+        m = numel(e);   % Number of basis elements of se(n)
+
+        % NOTE: This method makes assumputions on the ordering of the
+        %       translation basis elements. If this changes, this method
+        %       will not produce correct results.
+
+        % TODO - Make method generic
+        idxTrans = [];
+        for idx = 1:m
+            [i,j] = find(e{idx} == 1);
+            if j == M
+                idxTrans(end+1) = idx;
+            end
+        end
+
+        for idx = 1:numel(idxTrans)
+            SigmaH(idxTrans(idx),idxTrans(1):idxTrans(end)) = SigmaD(idx,:);
+        end
+end
