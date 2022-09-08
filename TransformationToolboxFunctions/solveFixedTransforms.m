@@ -46,7 +46,7 @@ function [H_b2a,H_y2x,varargout] = solveFixedTransforms(H_x2a,H_y2b,varargin)
 %               H_yi2yi{i} = invSE(LHS_H_yi2xj) * RHS_H_yi2xj;
 %               H_xj2xj{i} = LHS_H_yi2xj * invSE(RHS_H_yi2xj);
 %
-
+%
 %   Use Requirements:
 %       (1) Correspondence - Elements of H_x2a and H_y2b must correspond
 %           (i.e. H_x2a{i} must be captured at the same instant as H_y2b{i})
@@ -98,6 +98,9 @@ function [H_b2a,H_y2x,varargout] = solveFixedTransforms(H_x2a,H_y2b,varargin)
 %       % -----------------------------------------------------------------
 %
 %   M. Kutzer, 07Sep2022, USNA
+
+% Updates:
+
 
 %% Default options
 ZERO = [];
