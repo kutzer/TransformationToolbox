@@ -170,6 +170,9 @@ if ~fast
     n = numel(H_x2a);
 end
 
+%% Redefine "fast" (we are assuming values are valid)
+fast = true;
+
 %% Solve for H_b2a using AX = XB
 % For an explanation of the method, see "EW450 Lectures\13 - Robot-Camera
 % Calibration\Robot-Camera Calibration - Definition & Use.pptx"
@@ -187,7 +190,6 @@ A = cell(1,nAB);
 B = cell(1,nAB);
 
 % Define i/j pairs
-fast = true;
 for i = 1:n
     for j = 1:n
         % Isolate unique, non-identity transformation pairs
@@ -198,12 +200,12 @@ for i = 1:n
             % H_ai2aj
             H_x2ai = H_x2a{i};
             H_x2aj = H_x2a{j};
-            H_ai2aj = H_x2aj * invSE(H_x2ai);
+            H_ai2aj = H_x2aj * invSE(H_x2ai,fast);
 
             % H_bi2bj
             H_y2bi = H_y2b{i};
             H_y2bj = H_y2b{j};
-            H_bi2bj = H_y2bj * invSE(H_y2bi);
+            H_bi2bj = H_y2bj * invSE(H_y2bi,fast);
 
             iter = iter+1;
             A{iter} = H_ai2aj;
@@ -214,9 +216,9 @@ end
 fprintf('Number of A/B pairs: %d\n',iter);
 
 % Solve A * X = X * B
-X = solveAXeqXBinSE(A,B);
+X = solveAXeqXBinSE(A,B,fast);
 H_b2a = X;
-[tf,msg] = isSE(H_b2a);
+[tf,msg] = isSE(H_b2a,ZERO);
 if ~tf
     fprintf(...
         ['Value calculated for H_b2a is not a valid element of SE(3):\n\n',...
@@ -238,18 +240,18 @@ if nargout > 2
         LHS_H_bi2aj = H_ai2aj{i}*H_bi2ai;
         RHS_H_bi2aj = H_bj2aj*H_bi2bj{i};
 
-        H_bi2bi{i} = invSE(LHS_H_bi2aj) * RHS_H_bi2aj;
-        H_aj2aj{i} = LHS_H_bi2aj * invSE(RHS_H_bi2aj);
+        H_bi2bi{i} = invSE(LHS_H_bi2aj,fast) * RHS_H_bi2aj;
+        H_aj2aj{i} = LHS_H_bi2aj * invSE(RHS_H_bi2aj,fast);
     end
 
     % Calculate mean
     % NOTE: For low error, these matrices should be very close to the identity
-    muH_bi2bi = meanSE(H_bi2bi);
-    muH_aj2aj = meanSE(H_aj2aj);
+    muH_bi2bi = meanSE(H_bi2bi,ZERO);
+    muH_aj2aj = meanSE(H_aj2aj,ZERO);
     % Calculate covariance
     % NOTE: For low error, these matrices should contain all values near zero
-    SigmaH_bi2bi = covSE(H_bi2bi,muH_bi2bi);
-    SigmaH_aj2aj = covSE(H_aj2aj,muH_aj2aj);
+    SigmaH_bi2bi = covSE(H_bi2bi,muH_bi2bi,ZERO);
+    SigmaH_aj2aj = covSE(H_aj2aj,muH_aj2aj,ZERO);
 end
 
 %% Solve for H_y2x using AX = XB
@@ -279,12 +281,12 @@ for i = 1:n
             % H_ai2aj
             H_xi2a = H_x2a{i};
             H_xj2a = H_x2a{j};
-            H_xi2xj = invSE(H_xj2a) * H_xi2a;
+            H_xi2xj = invSE(H_xj2a,fast) * H_xi2a;
 
             % H_bi2bj
             H_yi2b = H_y2b{i};
             H_yj2b = H_y2b{j};
-            H_yi2yj = invSE(H_yj2b) * H_yi2b;
+            H_yi2yj = invSE(H_yj2b,fast) * H_yi2b;
 
             iter = iter+1;
             A{iter} = H_xi2xj;
@@ -295,9 +297,9 @@ end
 fprintf('Number of A/B pairs: %d\n',iter);
 
 % Solve A * X = X * B
-X = solveAXeqXBinSE(A,B);
+X = solveAXeqXBinSE(A,B,fast);
 H_y2x = X;
-[tf,msg] = isSE(H_y2x);
+[tf,msg] = isSE(H_y2x,ZERO);
 if ~tf
     fprintf(...
         ['Value calculated for H_b2a is not a valid element of SE(3):\n\n',...
@@ -320,18 +322,18 @@ if nargout > 2
         LHS_H_yi2xj = H_xi2xj{i}*H_yi2xi;
         RHS_H_yi2xj = H_yj2xj*H_yi2yj{i};
 
-        H_yi2yi{i} = invSE(LHS_H_yi2xj) * RHS_H_yi2xj;
-        H_xj2xj{i} = LHS_H_yi2xj * invSE(RHS_H_yi2xj);
+        H_yi2yi{i} = invSE(LHS_H_yi2xj,fast) * RHS_H_yi2xj;
+        H_xj2xj{i} = LHS_H_yi2xj * invSE(RHS_H_yi2xj,fast);
     end
 
     % Calculate mean
     % NOTE: For low error, these matrices should be very close to the identity
-    muH_yi2yi = meanSE(H_yi2yi);
-    muH_xj2xj = meanSE(H_xj2xj);
+    muH_yi2yi = meanSE(H_yi2yi,ZERO);
+    muH_xj2xj = meanSE(H_xj2xj,ZERO);
     % Calculate covariance
     % NOTE: For low error, these matrices should contain all values near zero
-    SigmaH_yi2yi = covSE(H_yi2yi,muH_yi2yi);
-    SigmaH_xj2xj = covSE(H_xj2xj,muH_xj2xj);
+    SigmaH_yi2yi = covSE(H_yi2yi,muH_yi2yi,ZERO);
+    SigmaH_xj2xj = covSE(H_xj2xj,muH_xj2xj,ZERO);
 end
 
 %% Package output
