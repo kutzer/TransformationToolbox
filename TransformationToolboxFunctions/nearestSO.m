@@ -5,10 +5,10 @@ function R = nearestSO(M)
 %   matrix M such that the square of the Frobenius norm is minimized.
 %    -> R is the argument that minimizes \| M - R \|_{F}^{2}
 %
-%   Inputs
+%   Input(s)
 %       M - an nxn matrix (n must match a valid dimension for SO(N))
 %   
-%   Outputs
+%   Output(s)
 %       R - nxn element of SO(N)
 %
 %   References:
