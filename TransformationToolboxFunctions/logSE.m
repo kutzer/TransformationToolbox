@@ -27,7 +27,7 @@ function h = logSE(H,varargin)
 %
 %   M. Kutzer, 26Jan2022, USNA
 
-% Updates
+% Updates:
 %   06Sep2022 - Updated to include ZERO and fast optional inputs
 
 %% Default options
