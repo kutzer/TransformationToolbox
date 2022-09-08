@@ -1,16 +1,34 @@
-function X = solveAXeqXBinSE(A,B)
+function [X,A,B] = solveAXeqXBinSE(A,B,varargin)
 % SOLVEAXEQXBINSE solves the AX = XB equation assuming A, B, and X \in SE(N) 
 % given two or more pairs of A and B following [1]
 %   X = SOLVEAXEQXBINSE(A,B) provides the AX = XB least squares solution 
 %   given two or more pairs of A and B. 
+%   
+%   X = SOLVEAXEQXBINSE(___,ZERO)
+%
+%   X = SOLVEAXEQXBINSE(___,fast)
+%
+%   [X,A_used,B_used] = solveAXeqXBinSE(___)
 %
 %   Input(s)
 %       A - k-element cell array containing values of SE(N)
 %       B - k-element cell array containing values of SE(N)
+%       ZERO - [OPTIONAL] positive value that is sufficiently close to zero
+%              or assumed zero (e.g. ZERO = 1e-8). If ZERO is not   
+%              specified, a default value is used.
+%       fast - [OPTIONAL] true/false logical value indicating whether to
+%              skip checking SE(N). Choosing fast = true ignores specified
+%              ZERO. 
+%                fast = true    - Skip checking if H \in SE(N)
+%                fast = [false] - Check if H \in SE(N)
 %
 %   Output(s)
-%       X - (N+1)x(N+1) matrix containing the least squares solution to 
-%           AX = XB
+%       X      - (N+1)x(N+1) matrix containing the least squares solution  
+%                to AX = XB
+%       A_used - m-element cell array containing "corrected" values of A
+%               (see validCorrespondenceSE.m)
+%       B_used - m-element cell array containing "corrected" values of B
+%               (see validCorrespondenceSE.m)
 %
 %   References:
 %       [1] Park, Frank C., and Bryan J. Martin. "Robot sensor calibration:
@@ -19,8 +37,12 @@ function X = solveAXeqXBinSE(A,B)
 %
 %   M. Kutzer, 09Apr2021, USNA
 
+%% Default options
+ZERO = [];
+fast = false;
+
 %% Check input(s)
-narginchk(2,2);
+narginchk(2,4);
 if ~iscell(A) || ~iscell(B)
     error('A and B must be specified as k-element cell arrays.');
 end
@@ -29,50 +51,67 @@ if numel(A) ~= numel(B)
     error('A and B must be specified in pairs (i.e. numel(A) == numel(B)).');
 end
 
-%% Calculate M to solve for R_X
-[n,m,o] = size(A{1});
-if o ~= 1
-    error('Cell elements must be NxNx1');
+if nargin > 2
+    for i = 1:numel(varargin)
+        switch lower( class(varargin{i} ))
+            case 'logical'
+                fast = varargin{i};
+            otherwise
+                if numel(varargin{i}) ~= 1
+                    error('Numeric optional inputs must be scalar values.');
+                end
+
+                if varargin{i} == 0 || varargin{i} == 1
+                    fast = logical(varargin{i});
+                else
+                    ZERO = varargin{i};
+                end
+        end
+    end
 end
+
+%% Correct A/B pairs
+str = 'AB';
+if ~fast
+    [A,B,info] = validCorrespondenceSE(A,B,ZERO);
+    
+    % Display removed pair information and altered transforms
+    for j = 1:size(info.RemoveBin,2)
+        % Display removed pair information
+        if info.RemoveBin(1,j)
+            fprintf('REMOVED PAIR: A{%d} - %s, B{%d} - %s\n',...
+                j,info.RemoveMsg{1,j},j,info.RemoveMsg{2,j});
+            continue
+        end
+        
+        % Display altered transform information
+        for i = 1:size(info.RemoveBin,1)
+            if ~isempty(info.RemoveMsg{i,j})
+                fprintf('ALTERED TRANSFORM: %s{%d} - %s\n',...
+                    str(i),j,info.RemoveMsg{i,j});
+            end
+        end
+    end
+
+end
+
+%% Calculate M to solve for R_X
+% Define dimensions
+n = size(A{1},1);
 
 % Initialize M
 M = zeros(n-1,n-1);
 
+fast = true;
 k = numel(A);
 for i = 1:k
-    % Check elements
-    % -> Check matrix dimensions
-    [niA,miA] = size(A{i});
-    [niB,miB] = size(B{i});
-    if niA ~= miA
-        error('A(%d) is not square.',i);
-    end
-    if niB ~= miB
-        error('B(%d) is not square.',i);
-    end
-    if (niA ~= n) || (miA ~= m) || (niB ~= n) || (miB ~= m)
-        error('All matrices must be the same dimension');
-    end
-    % -> Valid elements of SE
-    [tfA,msgA] = isSE(A{i});
-    [tfB,msgB] = isSE(B{i});
-    if ~tfA
-        fprintf('A(%d) does not appear to be an element of SE(%d):\n',...
-            i,n-1);
-        fprintf('\t%s\n',msgA);
-    end
-    if ~tfB
-        fprintf('B(%d) does not appear to be an element of SE(%d):\n',...
-            i,n-1);
-        fprintf('\t%s\n',msgB);
-    end
-    
     % Calculate vectorized forms of so
     R_Ai = A{i}(1:(n-1),1:(n-1));    % ith rotation for A
     R_Bi = B{i}(1:(n-1),1:(n-1));    % ith rotation for B
+
     % TODO - check Tr(R_A) ~= -1 & Tr(R_B) ~= -1
-    a = vee(logm(R_Ai),'fast');  % vectorized form of so
-    b = vee(logm(R_Bi),'fast');  % vectorized form of so
+    a = vee( logSO(R_Ai,fast), fast );  % vectorized form of so
+    b = vee( logSO(R_Bi,fast), fast );  % vectorized form of so
     
     % Update M (page 720)
     M = M + b*a.';
@@ -105,4 +144,4 @@ b_X = ( ((C.')*C)^(-1) )*(C.')*d;
 %% Compile output
 X = eye(n);
 X(1:(n-1),1:(n-1)) = R_X;
-X(1:(n-1),n) = b_X;
+X(1:(n-1),n)       = b_X;
