@@ -53,6 +53,9 @@ function [SigmaH,muH] = covSE(H,varargin)
 
 % TODO - match the syntax of meanSE
 
+% Update(s)
+%   09Sep2022 - Updated to use parseVarargin_ZERO_fast
+
 %% Check Inputs
 narginchk(1,5);
 
@@ -67,29 +70,22 @@ ZERO = 1e-8;
 METHOD = 'Coupled';
 muH = [];
 
+% Parse ZERO and "fast" values
+[ZERO,throwErr,cellOut] = parseVarargin_ZERO_fast(varargin,ZERO,throwErr);
+
 % Parse variable inputs
-if nargin > 1
-    for i = 1:numel(varargin)
-        switch lower( class(varargin{i} ))
-            case 'char'
-                METHOD = varargin{i};
-            case 'string'
-                METHOD = char( varargin{i} );
-            case 'logical'
-                throwErr = varargin{i};
-            otherwise
-                if ismatrix(varargin{i}) && numel(varargin{i}) == numel(H{1})
-                    muH = varargin{i};
-                elseif numel(varargin{i}) == 1
-                    if varargin{i} == 0 || varargin{i} == 1
-                        throwErr = logical(varargin{i});
-                    else
-                        ZERO = varargin{i};
-                    end
-                else
-                    error('Numeric optional inputs must be scalar values or a valid element of SE(M).');
-                end
-        end
+for i = 1:numel(cellOut)
+    switch lower( class(cellOut{i} ))
+        case 'char'
+            METHOD = cellOut{i};
+        case 'string'
+            METHOD = char( cellOut{i} );
+        otherwise
+            if ismatrix(cellOut{i}) && numel(cellOut{i}) == numel(H{1})
+                muH = varargin{i};
+            else
+                error('Numeric optional inputs must be scalar, strings, or a valid element of SE(M).');
+            end
     end
 end
 
@@ -101,11 +97,6 @@ switch lower(METHOD)
         % Good
     otherwise
         error('"%s" is not a valid method. Please use "Coupled" or "Decoupled".',METHOD);
-end
-
-% Check zero
-if ZERO < 0
-    error('ZERO value must be greater or equal to 0.')
 end
 
 %% Check values H for valid SE(N)
