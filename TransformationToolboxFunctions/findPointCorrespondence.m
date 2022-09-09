@@ -20,7 +20,7 @@ function [idx,err] = findPointCorrespondence(q,p)
 %
 %   See also pointsToSE3, invSE
 %
-%   (c) M. Kutzer 03Jan2017, USNA
+%   M. Kutzer, 03Jan2017, USNA
 
 %% Check Inputs
 narginchk(2,2);
