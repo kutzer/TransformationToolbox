@@ -99,7 +99,8 @@ function [H_b2a,H_y2x,varargout] = solveFixedTransforms(H_x2a,H_y2b,varargin)
 %
 %   M. Kutzer, 07Sep2022, USNA
 
-% Updates:
+% Update(s)
+%   09Sep2022 - Updated to use parseVarargin_ZERO_fast
 
 
 %% Default options
@@ -126,25 +127,10 @@ end
 % Define total number of correspondence pairs
 n = n_x2a;
 
-% Parse ZERO/fast optional inputs
-if nargin > 2
-    for i = 1:numel(varargin)
-        switch lower( class(varargin{i} ))
-            case 'logical'
-                fast = varargin{i};
-            otherwise
-                if numel(varargin{i}) ~= 1
-                    error('Numeric optional inputs must be scalar values.');
-                end
+% Parse ZERO and "fast" values
+[ZERO,fast,cellOut] = parseVarargin_ZERO_fast(varargin,ZERO,fast);
 
-                if varargin{i} == 0 || varargin{i} == 1
-                    fast = logical(varargin{i});
-                else
-                    ZERO = varargin{i};
-                end
-        end
-    end
-end
+% TODO - check cellOut values for unused terms
 
 %% Correct A/B pairs
 str = {'H_x2a','H_y2b'};
@@ -161,8 +147,8 @@ if ~fast
         end
 
         % Display altered transform information
-        for i = 1:size(info.RemoveBin,1)
-            if ~isempty(info.RemoveMsg{i,j})
+        for i = 1:size(info.AlteredBin,1)
+            if info.AlteredBin(i,j)
                 fprintf('ALTERED TRANSFORM: %s{%d} - %s\n',...
                     str{i},j,info.RemoveMsg{i,j});
             end

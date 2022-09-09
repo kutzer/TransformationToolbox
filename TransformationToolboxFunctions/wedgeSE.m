@@ -11,14 +11,41 @@ function M = wedgeSE(v)
 %       6 x 6 matrix -> $v \in \mathbb{R}^15$
 %       ...
 %
+%   Input(s)
+%       v - N-element array (see notes above regarding valid values of N)
+%
+%   Input(s) [Unused, added for standard input syntax]
+%       ZERO   - [OPTIONAL] positive scalar value that is
+%                sufficiently close to zero to be assumed zero
+%                (e.g. ZERO = 1e-8). If a "ZERO" is not specified,
+%                a default of ZERO = [] is used.
+%       fast   - [OPTIONAL] true/false logical value indicating
+%                whether to skip checking a specified property or
+%                properties. If "fast" is not specified, a default of
+%                fast = false is used.
+%
+%   Output(s)
+%       M - MxM real matrix element of se(M)
+%
 %   See also veeSE, seBasis, veeSO, wedgeSO.
 %
 %   M. Kutzer, 04Jan2017, USNA
 
+% Update(s)
+%   09Sep2022 - Updated to use parseVarargin_ZERO_fast [UNUSED]
+
 %% Check inputs
-narginchk(1,1);
+narginchk(1,3);
 p = numel(v);
 v = reshape(v,p,[]);
+
+%{
+% UNUSED
+% Parse ZERO and "fast" values
+[ZERO,fast,cellOut] = parseVarargin_ZERO_fast(varargin,ZERO,fast);
+
+% TODO - check cellOut values for unused terms
+%}
 
 %% $M \in so(N)$
 m = p - (8*p + 1)^(1/2)/2 + 1/2;

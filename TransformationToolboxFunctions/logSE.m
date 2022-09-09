@@ -13,7 +13,7 @@ function h = logSE(H,varargin)
 %       H - (N+1)x(N+1) element of SE(N)
 %       ZERO - [OPTIONAL] positive value that is sufficiently close to zero
 %              or assumed zero (e.g. ZERO = 1e-8). If ZERO is not   
-%              specified, a default value is used.
+%              specified, a default value of ZERO = 1e-8 is used.
 %       fast - [OPTIONAL] true/false logical value indicating whether to
 %              skip checking SE(N). Choosing fast = true ignores specified
 %              ZERO. 
@@ -29,6 +29,7 @@ function h = logSE(H,varargin)
 
 % Updates:
 %   06Sep2022 - Updated to include ZERO and fast optional inputs
+%   09Sep2022 - Updated to use parseVarargin_ZERO_fast
 
 %% Default options
 ZERO = 1e-8;
@@ -37,29 +38,10 @@ fast = false;
 %% Check inputs
 narginchk(1,3);
 
-if nargin > 1
-    for i = 1:numel(varargin)
-        switch lower( class(varargin{i} ))
-            case 'logical'
-                fast = varargin{i};
-            otherwise
-                if numel(varargin{i}) ~= 1
-                    error('Numeric optional inputs must be scalar values.');
-                end
+% Parse ZERO and "fast" values
+[ZERO,fast,cellOut] = parseVarargin_ZERO_fast(varargin,ZERO,fast);
 
-                if varargin{i} == 0 || varargin{i} == 1
-                    fast = logical(varargin{i});
-                else
-                    ZERO = varargin{i};
-                end
-        end
-    end
-end
-
-% Check zero
-if ZERO < 0
-    error('ZERO value must be greater or equal to 0.')
-end
+% TODO - check cellOut values for unused terms
 
 %% Check H
 if ~fast
@@ -78,25 +60,10 @@ d = H(1:(N-1),N);
 
 h = zeros(N,N);
 switch N
-    case 3
+    case {3,4}
         % Recover axis/angle
-        [Axis,Angle] = SOtoAxisAngle(R);
-        % Apply Rodrigues's Formula for SE(2)
-        if Angle == 0
-            h(1:(N-1),N) = d;
-        else
-            K = wedge(Axis);
-            h(1:(N-1),1:(N-1)) = Angle*K;
-            J_L = eye((N-1)) +...
-                ( (1-cos(Angle))/Angle )*K +...
-                ( (Angle - sin(Angle))/Angle )*K^2;
-            invJ_L = (J_L)^-1;
-            h(1:(N-1),N) = invJ_L * d;
-        end
-    case 4
-        % Recover axis/angle
-        [Axis,Angle] = SOtoAxisAngle(R);
-        % Apply Rodrigues's Formula for SE(3)
+        [Axis,Angle] = SOtoAxisAngle(R,ZERO,fast);
+        % Apply Rodrigues's Formula for SE(2) & SE(3)
         if Angle == 0
             h(1:(N-1),N) = d;
         else
@@ -110,7 +77,7 @@ switch N
         end
     otherwise
         % Apply generic SE(N) solution for N > 3 using logm
-        if isZero(R - eye(N-1))
+        if isZero(R - eye(N-1),ZERO)
             h(1:(N-1),N) = d;
         else
             h = logm(H);

@@ -24,7 +24,9 @@ function H = smoothSE3(varargin)
 
 % Updates
 %   27Feb2016 - Replaced logm with logSO to compensate for negative
-%   eigenvalue limitation of logm
+%               eigenvalue limitation of logm
+%   09Sep2022 - Added validCorrespondenceSE to check for valid elements of
+%               H
 
 plotsOn = false;  % useful for debugging and visualizing output
 
@@ -58,6 +60,25 @@ if nargin == 4
     else
         span = varargin{4};
     end
+end
+
+%% Check for valid list of values
+[H,info] = validCorrespondenceSE(H);
+
+idxRmv = find(info.RemoveBin(1,:));
+idxAlt = find(info.AlteredBin(1,:));
+if isempty(idxRmv)
+    msg = sprintf('The following values of H were removed because they are invalid:\n\t[ ');
+    idxStr = sprintf('%d ',idxRmv);
+    msg = sprintf('%s%s]\n\n\tSee validCorrespondenceSE for more info.',msg,idxStr);
+    warning(msg);
+end
+
+if isempty(idxAlt)
+    msg = sprintf('The following values of H were altered using nearestSE:\n\t[ ');
+    idxStr = sprintf('%d ',idxAlt);
+    msg = sprintf('%s%s]\n\n\tSee validCorrespondenceSE for more info.',msg,idxStr);
+    warning(msg);
 end
 
 %% Check lengths

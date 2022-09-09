@@ -55,6 +55,7 @@ function muH = meanSE(H,varargin)
 %   01Sep2022 - Added coupled/decoupled option and revised parsing of
 %               optional inputs
 %   02Sep2022 - Corrected/removed SE(3) dimension assumptions
+%   09Sep2022 - Updated to use parseVarargin_ZERO_fast
 
 %% Check Inputs
 narginchk(1,4);
@@ -69,27 +70,18 @@ throwErr = false;
 ZERO = [];
 METHOD = 'Coupled';
 
-% Parse variable inputs
-if nargin > 1
-    for i = 1:numel(varargin)
-        switch lower( class(varargin{i} ))
-            case 'char'
-                METHOD = varargin{i};
-            case 'string'
-                METHOD = char( varargin{i} );
-            case 'logical'
-                throwErr = varargin{i};
-            otherwise
-                if numel(varargin{i}) ~= 1
-                    error('Numeric optional inputs must be scalar values.');
-                end
+% Parse ZERO and "fast" values
+[ZERO,throwErr,cellOut] = parseVarargin_ZERO_fast(varargin,ZERO,throwErr);
 
-                if varargin{i} == 0 || varargin{i} == 1
-                    throwErr = logical(varargin{i});
-                else
-                    ZERO = varargin{i};
-                end
-        end
+% Parse variable inputs
+for i = 1:numel(cellOut)
+    switch lower( class(cellOut{i} ))
+        case 'char'
+            METHOD = cellOut{i};
+        case 'string'
+            METHOD = char( cellOut{i} );
+        otherwise
+            % TODO - check unused elements of cellOut
     end
 end
 
@@ -103,86 +95,37 @@ switch lower(METHOD)
         error('"%s" is not a valid method. Please use "Coupled" or "Decoupled".',METHOD);
 end
 
-% Check zero
-if ZERO < 0
-    error('ZERO value must be greater or equal to 0.')
+%% Check for valid list of values
+[H,info] = validCorrespondenceSE(H,ZERO);
+
+idxRmv = find(info.RemoveBin(1,:));
+idxAlt = find(info.AlteredBin(1,:));
+msg = '';
+if ~isempty(idxRmv)
+    msg = sprintf('%sThe following values of H were removed because they are invalid:\n\t[ ',msg);
+    idxStr = sprintf('%d ',idxRmv);
+    msg = sprintf('%s%s]\n\tSee validCorrespondenceSE for more info.',msg,idxStr);
 end
 
-%% Check values H for valid SE(N)
-% Initialize variables
-N = numel(H);           % Number of elements of H
-dims = zeros(N,1);      % Dimensions of each element of H
-msgs = {};              % Messages desribing bad values of H
-idx = [];               % Indices associated with bad valus of H
-H_inSE = H;             % Corrected values of H
-nearSE = true(size(H)); % Logical array describing corrected values  
-                        %   resulting in a valid elements of SE(M)
-nearSEmsg = cell(N,1);  % Cell array describing bad nearest element of SE(M)
-
-% Check values of H
-for i = 1:N
-    % Check dimensions of H
-    if ~ismatrix(H{i})
-        error('All elements of H must be square matrices.');
+if ~isempty(idxAlt)
+    if ~isempty(msg)
+        msg = sprintf('%s\n\n',msg);
     end
-    dims(i) = size(H{i},1);
-    % Check ith element of H
-    [bin,msg] = isSE(H{i},ZERO);
-    if ~bin
-        % Compile messages and add index for error/warning reporting
-        msgs{end+1} = msg;
-        idx(end+1) = i;
-
-        % Attempt to map bad elements to SE(M)
-        if ~throwErr
-            H_inSE{i} = nearestSE(H{i});
-            [nearSE(i),nearSEmsg{i}] = isSE(H_inSE{i},ZERO);
-        end
-    end
+    msg = sprintf('%sThe following values of H were altered using nearestSE:\n\t[ ',msg);
+    idxStr = sprintf('%d ',idxAlt);
+    msg = sprintf('%s%s]\n\tSee validCorrespondenceSE for more info.',msg,idxStr);
 end
 
-% Throw error for inconsistent or incorrect dimensions
-if nnz(dims < 3) > 0
-    error('All elements of H must be 3x3 or larger.');
-end
-if nnz(dims(1) ~= dims) > 0
-    error('All elements of H must be the same size.');
-end
-
-% Throw error/warning for bad elements of SE(M)
-if ~isempty(idx)
-    msg = sprintf('One or more elements of your sample are not valid elements of SE:\n');
-    for i = 1:numel(msgs)
-        msg = [msg, sprintf('\tElement %d: %s\n',idx(i),msgs{i})];
-    end
+if ~isempty(msg)
     if throwErr
         error(msg);
     else
-        fprintf('%s\n',msg);
+        warning(msg);
     end
 end
 
-%% Replace/remove bad nearest elements of SE(M)
-if numel(msgs) > 0
-    badVals = numel(msgs);       % Number of bad values of H
-    remVals = nnz(~nearSE);      % Number of values to remove from H
-    newVals = badVals - remVals; % Number of nearestSE replaced values of H
-    
-    % Build message
-    msg = [];
-    msg = sprintf('%s\t%d elements of H are not valid elements of SE(M)\n',msg,badVals);
-    msg = sprintf('%s\t%d elements of H replaced with nearest SE(M)\n'    ,msg,newVals);
-    msg = sprintf('%s\t%d elements of H removed\n'                        ,msg,remVals);
-    fprintf('%s',msg);
-    
-    % Replace H with nearest SE(M) replacemets
-    H = H_inSE;
-    % Remove values without a valid SE(M) element
-    H(~nearSE) = [];
-
-    % Update the number of elements of H
-    N = numel(H);
-end
+%% Number of elements of H
+N = numel(H);           
 
 %% Check number of elements of H
 if N < 0

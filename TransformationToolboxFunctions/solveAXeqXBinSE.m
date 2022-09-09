@@ -37,6 +37,9 @@ function [X,A,B] = solveAXeqXBinSE(A,B,varargin)
 %
 %   M. Kutzer, 09Apr2021, USNA
 
+% Update(s)
+%   09Sep2022 - Updated to use parseVarargin_ZERO_fast
+
 %% Default options
 ZERO = [];
 fast = false;
@@ -51,24 +54,8 @@ if numel(A) ~= numel(B)
     error('A and B must be specified in pairs (i.e. numel(A) == numel(B)).');
 end
 
-if nargin > 2
-    for i = 1:numel(varargin)
-        switch lower( class(varargin{i} ))
-            case 'logical'
-                fast = varargin{i};
-            otherwise
-                if numel(varargin{i}) ~= 1
-                    error('Numeric optional inputs must be scalar values.');
-                end
-
-                if varargin{i} == 0 || varargin{i} == 1
-                    fast = logical(varargin{i});
-                else
-                    ZERO = varargin{i};
-                end
-        end
-    end
-end
+% Parse ZERO and "fast" values
+[ZERO,fast,cellOut] = parseVarargin_ZERO_fast(varargin,ZERO,fast);
 
 %% Correct A/B pairs
 str = 'AB';
@@ -102,7 +89,7 @@ n = size(A{1},1);
 % Initialize M
 M = zeros(n-1,n-1);
 
-fast = true;
+fast = true; % <--- redefine "fast" *assuming values are already checked*
 k = numel(A);
 for i = 1:k
     % Calculate vectorized forms of so

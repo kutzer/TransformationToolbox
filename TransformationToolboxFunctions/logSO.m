@@ -7,7 +7,7 @@ function r = logSO(R,varargin)
 %
 %   r = LOGSO(___,ZERO)
 %
-%   r = LOGSOe(___,fast)
+%   r = LOGSO(___,fast)
 %
 %   Input(s)
 %       R - NxN element of SO(N)
@@ -31,8 +31,21 @@ function r = logSO(R,varargin)
 %   26Jan2022 - Replaced logm usage entirely
 %   26Jan2022 - Updated documentation
 %   06Sep2022 - Updated to include ZERO and fast optional inputs
+%   09Sep2022 - Updated to use parseVarargin_ZERO_fast
+
+%% Set default values
+ZERO = [];
+fast = false;
+
+%% Check input(s)
+narginchk(1,3);
+
+% Parse ZERO and "fast" values
+[ZERO,fast,cellOut] = parseVarargin_ZERO_fast(varargin,ZERO,fast);
+
+% TODO - check cellOut values for unused terms
 
 %% Calculate logSO
-[Axis,Angle] = SOtoAxisAngle(R,varargin{:});
+[Axis,Angle] = SOtoAxisAngle(R,ZERO,fast);
 v = Axis*Angle;
 r = wedge(v);

@@ -22,14 +22,20 @@ function varargout = validCorrespondenceSE(varargin)
 %       ...
 %       H_y2z_v - m-element cell array containing values of SE(N) 
 %       info    - structured array describing removed/altered transforms
-%           info.RemoveMsg - n x m cell array containing descriptions of
+%           info.RemoveMsg - n x k cell array containing descriptions of
 %                            why transformations were removed 
-%           info.RemoveBin - n x m logical array defining removed
+%           info.RemoveBin - n x k logical array defining removed
 %                            transformations
+%           info.AlteredBin - n x k logical array defining altered
+%                             transformations
 %
 %           NOTE: n is the total number of cell arrays provided
 %
 %   M. Kutzer, 08Sep2022, USNA
+
+% Update(s)
+%   09Sep2022 - Updated documentation, added info.AlteredBin, and corrected
+%               errors
 
 %% Set default values
 ZERO = [];
@@ -93,7 +99,8 @@ end
 m = m_star; % Update number of elemens in each set
 
 %% Check dimensions of matrix elements
-tfRemove = false(n,m);  % Elements to remove
+tfRemove  = false(n,m); % Elements to remove
+tfAltered = false(n,m); % Elements altered, but not removed
 tfMsg = cell(n,m);      % Details on why element was removed
 mm = zeros(n,m);        % Array of 1st dimension value
 
@@ -198,12 +205,13 @@ for k = 1:numel(i_all)
         continue
     end
 
-    if ~isZero(H_ij*invSE(H_ij_SE,1)-II, ZERO)
+    if ~isZero(H_ij*invSE(H_ij_SE,true)-II, ZERO)
         % Get ith input name
         str_i = inputname(idx_H(i));
         % Define message
         msg = sprintf('%s{%d} has a larger than ZERO change when mapped to nearest SE(%d)',str_i,j,mm_star-1);
         tfMsg{i,j} = msg;
+        tfAltered(i,j) = true;
 
         % ??DO NOT REMOVE??
     end
@@ -229,14 +237,14 @@ end
 
 tfRemove = tfBadCor;
 
-%% Display resultsin
 %% Package outputs
 for i = 1:nargout
     if i <= n
         varargout{i} = varargin{i}(~tfRemove(i,:));
     elseif i == n+1
-        info.RemoveMsg = tfMsg;
-        info.RemoveBin = tfRemove;
+        info.RemoveMsg  = tfMsg;
+        info.RemoveBin  = tfRemove;
+        info.AlteredBin = tfAltered;
         varargout{i} = info;
     else
         warning('Maximum valid outputs is %d, output %d is empty.',n+1,i);

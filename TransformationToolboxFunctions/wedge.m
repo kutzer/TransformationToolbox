@@ -1,4 +1,4 @@
-function M = wedge(v)
+function M = wedge(v,varargin)
 % WEDGE converts an Nx1 vector into a skew-symmetric matrix 
 % for all N \in {1,3,6,10,15,21,28,...}.
 %   M = WEDGE(v) calculates a skew-symmetric matrix from elements of v. 
@@ -10,6 +10,26 @@ function M = wedge(v)
 %       5 x 5 matrix -> $v \in \mathbb{R}^10$
 %       etc.
 %
+%   M = WEDGE(___,ZERO)
+%
+%   M = WEDGE(___,fast)
+%
+%   Input(s)
+%       v - N-element array (see notes above regarding valid values of N)
+%
+%   Input(s) [Unused, added for standard input syntax]
+%       ZERO   - [OPTIONAL] positive scalar value that is
+%                sufficiently close to zero to be assumed zero
+%                (e.g. ZERO = 1e-8). If a "ZERO" is not specified,
+%                a default of ZERO = [] is used.
+%       fast   - [OPTIONAL] true/false logical value indicating
+%                whether to skip checking a specified property or
+%                properties. If "fast" is not specified, a default of
+%                fast = false is used.
+%
+%   Output(s)
+%       M - MxM real skew-symmetric matrix element of so(M)
+%
 %   See also wedgeSO, vee, veeSO, soBasis, isSkewSymmetric, veeSE, wedgeSE.
 %
 %   M. Kutzer 09Oct2014, USNA
@@ -18,11 +38,20 @@ function M = wedge(v)
 %   27Feb2015 - Updated to include N-dimensional wedge (or hat) operator.
 %   03Feb2016 - Updated documentation
 %   04Jan2017 - Updated documentation
+%   09Sep2022 - Updated to use parseVarargin_ZERO_fast [UNUSED]
 
 %% Check inputs
-narginchk(1,1);
+narginchk(1,3);
 m = numel(v);
 v = reshape(v,m,[]);
+
+%{
+% UNUSED
+% Parse ZERO and "fast" values
+[ZERO,fast,cellOut] = parseVarargin_ZERO_fast(varargin,ZERO,fast);
+
+% TODO - check cellOut values for unused terms
+%}
 
 %% $M \in so(3)$
 if m == 3        

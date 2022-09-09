@@ -8,7 +8,7 @@ function R = randSO(dim)
 %
 %   M. Kutzer 07July2017, USNA
 
-%Updates
+% Updates
 %   
 
 %% Check inputs

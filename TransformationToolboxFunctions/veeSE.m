@@ -13,8 +13,8 @@ function v = veeSE(h,varargin)
 %   Input(s)
 %       r - NxN element of se(N)
 %       ZERO - [OPTIONAL] positive value that is sufficiently close to zero
-%              or assumed zero (e.g. ZERO = 1e-8). If ZERO is not   
-%              specified, a default value is used.
+%              or assumed zero (e.g. ZERO = 1e-8). If a "ZERO" is not specified,
+%                a default of ZERO = 1e-8 is used.
 %       fast - [OPTIONAL] true/false logical value indicating whether to
 %              skip checking for skew-symmetry. Choosing fast = true 
 %              ignores specified ZERO. 
@@ -38,6 +38,7 @@ function v = veeSE(h,varargin)
 %   26Jan2022 - Added increased "zero" value of 1e-8
 %   06Sep2022 - Updated to include ZERO and "standardized" fast optional 
 %               inputs
+%   09Sep2022 - Updated to use parseVarargin_ZERO_fast
 
 %% Default options
 ZERO = 1e-8;
@@ -46,43 +47,10 @@ fast = false;
 %% Default options
 narginchk(1,3);
 
-if nargin > 1
-    for i = 1:numel(varargin)
-        switch lower( class(varargin{i} ))
-            case 'char'
-                % Legacy input
-                str = varargin{i};
-                switch lower(str)
-                    case 'fast'
-                        fast = true;
-                end
-            case 'string'
-                % Legacy input
-                str = char( varargin{i} );
-                switch lower(str)
-                    case 'fast'
-                        fast = true;
-                end
-            case 'logical'
-                fast = varargin{i};
-            otherwise
-                if numel(varargin{i}) ~= 1
-                    error('Numeric optional inputs must be scalar values.');
-                end
+% Parse ZERO and "fast" values
+[ZERO,fast,cellOut] = parseVarargin_ZERO_fast(varargin,ZERO,fast);
 
-                if varargin{i} == 0 || varargin{i} == 1
-                    fast = logical(varargin{i});
-                else
-                    ZERO = varargin{i};
-                end
-        end
-    end
-end
-
-% Check zero
-if ZERO < 0
-    error('ZERO value must be greater or equal to 0.')
-end
+% TODO - check cellOut values for unused terms
 
 %% Check M
 N = size(h,1);

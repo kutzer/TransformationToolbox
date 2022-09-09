@@ -31,6 +31,7 @@ function [Axis,Angle] = SOtoAxisAngle(R,varargin)
 %   26Jan2022 - Replaced "vrrotmat2vec" with "rotm2axang" for SO(3)
 %   26Jan2022 - Added default axis for zero angle with SO(N) where N > 3
 %   06Sep2022 - Updated to include ZERO and fast optional inputs
+%   09Sep2022 - Updated to use parseVarargin_ZERO_fast
 
 % TODO - address negative eigenvalue issues of logm for larger than 3x3
 
@@ -41,29 +42,10 @@ fast = false;
 %% Check inputs
 narginchk(1,3);
 
-if nargin > 1
-    for i = 1:numel(varargin)
-        switch lower( class(varargin{i} ))
-            case 'logical'
-                fast = varargin{i};
-            otherwise
-                if numel(varargin{i}) ~= 1
-                    error('Numeric optional inputs must be scalar values.');
-                end
+% Parse ZERO and "fast" values
+[ZERO,fast,cellOut] = parseVarargin_ZERO_fast(varargin,ZERO,fast);
 
-                if varargin{i} == 0 || varargin{i} == 1
-                    fast = logical(varargin{i});
-                else
-                    ZERO = varargin{i};
-                end
-        end
-    end
-end
-
-% Check zero
-if ZERO < 0
-    error('ZERO value must be greater or equal to 0.')
-end
+% TODO - check cellOut values for unused terms
 
 %% Check R
 if ~fast
