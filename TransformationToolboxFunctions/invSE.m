@@ -3,15 +3,15 @@ function invH = invSE(H,varargin)
 % using the properties of rotation matrices.
 %   invH = INVSE(H)
 %
-%   invH = LOGSE(___,ZERO)
+%   invH = INVSE(___,ZERO)
 %
-%   invH = LOGSE(___,fast)
+%   invH = INVSE(___,fast)
 %
 %   Input(s)
 %       H    - (N+1)x(N+1) array element of SE(N)
 %       ZERO - [OPTIONAL] positive value that is sufficiently close to zero
 %              or assumed zero (e.g. ZERO = 1e-8). If ZERO is not   
-%              specified, a default value is used.
+%              specified, a default of ZERO = [] is used.
 %       fast - [OPTIONAL] true/false logical value indicating whether to
 %              skip checking SE(N). Choosing fast = true ignores specified
 %              ZERO. 
@@ -33,6 +33,7 @@ function invH = invSE(H,varargin)
 % Updates
 %   02Nov2021 - Updated to include "fast"
 %   08Sep2022 - Updated to include ZERO 
+%   09Sep2022 - Updated to use parseVarargin_ZERO_fast
 
 %% Default options
 ZERO = [];
@@ -41,29 +42,10 @@ fast = false;
 %% Check inputs
 narginchk(1,3);
 
-if nargin > 1
-    for i = 1:numel(varargin)
-        switch lower( class(varargin{i} ))
-            case 'logical'
-                fast = varargin{i};
-            otherwise
-                if numel(varargin{i}) ~= 1
-                    error('Numeric optional inputs must be scalar values.');
-                end
+% Parse ZERO and "fast" values
+[ZERO,fast,cellOut] = parseVarargin_ZERO_fast(varargin,ZERO,fast);
 
-                if varargin{i} == 0 || varargin{i} == 1
-                    fast = logical(varargin{i});
-                else
-                    ZERO = varargin{i};
-                end
-        end
-    end
-end
-
-% Check zero
-if ZERO < 0
-    error('ZERO value must be greater or equal to 0.')
-end
+% TODO - check cellOut values for unused terms
 
 %% Check H
 if ~fast
