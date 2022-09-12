@@ -17,8 +17,7 @@ function [X,A,B] = solveAXeqXBinSE(A,B,varargin)
 %              or assumed zero (e.g. ZERO = 1e-8). If ZERO is not   
 %              specified, a default value is used.
 %       fast - [OPTIONAL] true/false logical value indicating whether to
-%              skip checking SE(N). Choosing fast = true ignores specified
-%              ZERO. 
+%              skip checking SE(N).
 %                fast = true    - Skip checking if H \in SE(N)
 %                fast = [false] - Check if H \in SE(N)
 %
@@ -89,7 +88,7 @@ n = size(A{1},1);
 % Initialize M
 M = zeros(n-1,n-1);
 
-fast = true; % <--- redefine "fast" *assuming values are already checked*
+fastLocal = true;
 k = numel(A);
 for i = 1:k
     % Calculate vectorized forms of so
@@ -97,8 +96,8 @@ for i = 1:k
     R_Bi = B{i}(1:(n-1),1:(n-1));    % ith rotation for B
 
     % TODO - check Tr(R_A) ~= -1 & Tr(R_B) ~= -1
-    a = vee( logSO(R_Ai,fast), fast );  % vectorized form of so
-    b = vee( logSO(R_Bi,fast), fast );  % vectorized form of so
+    a = vee( logSO(R_Ai,fastLocal), fastLocal );  % vectorized form of so
+    b = vee( logSO(R_Bi,fastLocal), fastLocal );  % vectorized form of so
     
     % Update M (page 720)
     M = M + b*a.';
