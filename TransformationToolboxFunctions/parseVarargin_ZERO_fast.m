@@ -78,7 +78,7 @@ for i = 1:numel(cellIn)
     if isnumeric(val_i)
         switch numel(val_i)
             case 0
-                f%printf('1\n');
+                %fprintf('1\n');
                 % Candidate "ZERO" is specified as []
 
                 if isDefined_ZERO
