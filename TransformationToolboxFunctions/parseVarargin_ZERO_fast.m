@@ -36,17 +36,8 @@ function [ZERO,fast,cellOut] = parseVarargin_ZERO_fast(cellIn,ZERO,fast)
 %
 %   M. Kutzer, 09Sep2022, USNA
 
-%% Check number of inputs
-narginchk(1,3);
-
-%% Check cellIn
-if ~iscell(cellIn)
-    error('Input must be a cell array');
-end
-if iscell(cellIn{1})
-    % varargin as input workaround
-    cellIn = cellIn{1};
-end
+% Update(s)
+%   12Sep2022 - Accounted for no inputs
 
 %% Set default values
 if nargin < 3
@@ -56,6 +47,24 @@ if nargin < 2
     ZERO = [];
 end
 cellOut = {};
+
+%% Check number of inputs
+narginchk(1,3);
+
+%% Check cellIn
+if ~iscell(cellIn)
+    error('Input must be a cell array');
+end
+
+if isempty(cellIn)
+    % No values provided
+    return
+end
+
+if iscell(cellIn{1})
+    % varargin as input workaround
+    cellIn = cellIn{1};
+end
 
 %% Parse cellIn
 isDefined_ZERO = false; % Flag noting whether a value for "ZERO" is found
