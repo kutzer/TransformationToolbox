@@ -1,11 +1,11 @@
 function [H_b2a,H_y2x,varargout] = solveFixedTransforms(H_x2a,H_y2b,varargin)
-% SOLVEFIXEDTRANSFORMATION solves for the fixed transformations associated
+% SOLVEFIXEDTRANSFORMS solves for the fixed transformations associated
 % with corresponding data sets.
-%   [H_b2a,H_y2x] = SOLVEFIXEDTRANSFORMATION(H_x2a,H_y2b)
+%   [H_b2a,H_y2x] = SOLVEFIXEDTRANSFORMS(H_x2a,H_y2b)
 %
-%   [H_b2a,H_y2x] = SOLVEFIXEDTRANSFORMATION(___,ZERO)
+%   [H_b2a,H_y2x] = SOLVEFIXEDTRANSFORMS(___,ZERO)
 %
-%   [H_b2a,H_y2x] = SOLVEFIXEDTRANSFORMATION(___,fast)
+%   [H_b2a,H_y2x] = SOLVEFIXEDTRANSFORMS(___,fast)
 %
 %   Input(s)
 %       H_x2a - n-element cell array containing unique elements of SE(N)
@@ -14,7 +14,7 @@ function [H_b2a,H_y2x,varargout] = solveFixedTransforms(H_x2a,H_y2b,varargin)
 %           H_y2b{i} - ith element of H_y2b
 %       ZERO - [OPTIONAL] positive value that is sufficiently close to zero
 %              or assumed zero (e.g. ZERO = 1e-8). If ZERO is not
-%              specified, a default value is used.
+%              specified, ZERO = 1e-8 is used.
 %       fast - [OPTIONAL] true/false logical value indicating whether to
 %              skip checking SE(N). Choosing fast = true ignores specified
 %              ZERO.
@@ -26,14 +26,20 @@ function [H_b2a,H_y2x,varargout] = solveFixedTransforms(H_x2a,H_y2b,varargin)
 %       H_y2x - (N+1)x(N+1) array element of SE(N) defining the fixed
 %               transformation relating Frame y to Frame x
 %       stats - structured array describing error statistics
-%           stats.muH_b2b    - error mean of H_bi2bi
-%           stats.muH_a2a    - error mean of H_aj2aj
-%           stats.muH_y2y    - error mean of H_yi2yi
-%           stats.muH_x2x    - error mean of H_xj2xj
-%           stats.SigmaH_b2b - error covariance of H_bi2bi
-%           stats.SigmaH_a2a - error covariance of H_aj2aj
-%           stats.SigmaH_y2y - error covariance of H_yi2yi
-%           stats.SigmaH_x2x - error covariance of H_xj2xj
+%           Statistics related to H_b2a:
+%               stats.muH_b2b    - error mean of H_bi2bi
+%               stats.muH_a2a    - error mean of H_aj2aj
+%               stats.SigmaH_b2b - error covariance of H_bi2bi
+%               stats.SigmaH_a2a - error covariance of H_aj2aj
+%               stats.H_bi2bj    - k-element cell array containing SE(N)
+%               stats.H_ai2aj    - k-element cell array containing SE(N)
+%           Statistics related to H_y2x:
+%               stats.muH_y2y    - error mean of H_yi2yi
+%               stats.muH_x2x    - error mean of H_xj2xj
+%               stats.SigmaH_y2y - error covariance of H_yi2yi
+%               stats.SigmaH_x2x - error covariance of H_xj2xj
+%               stats.H_yi2yj    - k-element cell array containing SE(N)
+%               stats.H_xi2xj    - k-element cell array containing SE(N)
 %
 %       NOTE: stats is calculated as follows
 %               LHS_H_bi2aj = H_ai2aj{i}*H_bi2ai;
@@ -104,7 +110,7 @@ function [H_b2a,H_y2x,varargout] = solveFixedTransforms(H_x2a,H_y2b,varargin)
 
 
 %% Default options
-ZERO = [];
+ZERO = 1e-8;
 fast = false;
 
 %% Check input(s)
@@ -160,7 +166,7 @@ if ~fast
 end
 
 %% Redefine "fast" (we are assuming values are valid)
-fast = true;
+fastLocal = true;
 
 %% Solve for H_b2a using AX = XB
 % For an explanation of the method, see "EW450 Lectures\13 - Robot-Camera
@@ -189,12 +195,12 @@ for i = 1:n
             % H_ai2aj
             H_x2ai = H_x2a{i};
             H_x2aj = H_x2a{j};
-            H_ai2aj = H_x2aj * invSE(H_x2ai,fast);
+            H_ai2aj = H_x2aj * invSE(H_x2ai,fastLocal);
 
             % H_bi2bj
             H_y2bi = H_y2b{i};
             H_y2bj = H_y2b{j};
-            H_bi2bj = H_y2bj * invSE(H_y2bi,fast);
+            H_bi2bj = H_y2bj * invSE(H_y2bi,fastLocal);
 
             iter = iter+1;
             A{iter} = H_ai2aj;
@@ -205,7 +211,7 @@ end
 fprintf('Number of A/B pairs: %d\n',iter);
 
 % Solve A * X = X * B
-X = solveAXeqXBinSE(A,B,fast);
+X = solveAXeqXBinSE(A,B,ZERO,fastLocal);
 H_b2a = X;
 [tf,msg] = isSE(H_b2a,ZERO);
 if ~tf
@@ -222,6 +228,7 @@ H_bi2bj = B;
 %% Approximate H_b2a error
 %   H_ai2aj H_bi2ai = H_bj2aj H_bi2bj
 %       H_bi2aj     =     H_bi2aj
+
 if nargout > 2
     H_bi2ai = H_b2a;
     H_bj2aj = H_b2a;
@@ -229,18 +236,18 @@ if nargout > 2
         LHS_H_bi2aj = H_ai2aj{i}*H_bi2ai;
         RHS_H_bi2aj = H_bj2aj*H_bi2bj{i};
 
-        H_bi2bi{i} = invSE(LHS_H_bi2aj,fast) * RHS_H_bi2aj;
-        H_aj2aj{i} = LHS_H_bi2aj * invSE(RHS_H_bi2aj,fast);
+        H_bi2bi{i} = invSE(LHS_H_bi2aj,fastLocal) * RHS_H_bi2aj;
+        H_aj2aj{i} = LHS_H_bi2aj * invSE(RHS_H_bi2aj,fastLocal);
     end
 
     % Calculate mean
     % NOTE: For low error, these matrices should be very close to the identity
-    muH_bi2bi = meanSE(H_bi2bi,ZERO);
-    muH_aj2aj = meanSE(H_aj2aj,ZERO);
+    muH_bi2bi = meanSE(H_bi2bi,ZERO,fastLocal);
+    muH_aj2aj = meanSE(H_aj2aj,ZERO,fastLocal);
     % Calculate covariance
     % NOTE: For low error, these matrices should contain all values near zero
-    SigmaH_bi2bi = covSE(H_bi2bi,muH_bi2bi,ZERO);
-    SigmaH_aj2aj = covSE(H_aj2aj,muH_aj2aj,ZERO);
+    SigmaH_bi2bi = covSE(H_bi2bi,muH_bi2bi,ZERO,fastLocal);
+    SigmaH_aj2aj = covSE(H_aj2aj,muH_aj2aj,ZERO,fastLocal);
 end
 
 %% Solve for H_y2x using AX = XB
@@ -251,7 +258,6 @@ end
 %   H_xi2xj H_yi2xi = H_yj2xj H_yi2yj
 %
 %   Where H_yi2xi = H_yj2xj for all i,j
-
 
 % Reinitialize parameters
 iter = 0;
@@ -270,12 +276,12 @@ for i = 1:n
             % H_ai2aj
             H_xi2a = H_x2a{i};
             H_xj2a = H_x2a{j};
-            H_xi2xj = invSE(H_xj2a,fast) * H_xi2a;
+            H_xi2xj = invSE(H_xj2a,fastLocal) * H_xi2a;
 
             % H_bi2bj
             H_yi2b = H_y2b{i};
             H_yj2b = H_y2b{j};
-            H_yi2yj = invSE(H_yj2b,fast) * H_yi2b;
+            H_yi2yj = invSE(H_yj2b,fastLocal) * H_yi2b;
 
             iter = iter+1;
             A{iter} = H_xi2xj;
@@ -286,7 +292,7 @@ end
 fprintf('Number of A/B pairs: %d\n',iter);
 
 % Solve A * X = X * B
-X = solveAXeqXBinSE(A,B,fast);
+X = solveAXeqXBinSE(A,B,ZERO,fastLocal);
 H_y2x = X;
 [tf,msg] = isSE(H_y2x,ZERO);
 if ~tf
@@ -311,30 +317,37 @@ if nargout > 2
         LHS_H_yi2xj = H_xi2xj{i}*H_yi2xi;
         RHS_H_yi2xj = H_yj2xj*H_yi2yj{i};
 
-        H_yi2yi{i} = invSE(LHS_H_yi2xj,fast) * RHS_H_yi2xj;
-        H_xj2xj{i} = LHS_H_yi2xj * invSE(RHS_H_yi2xj,fast);
+        H_yi2yi{i} = invSE(LHS_H_yi2xj,fastLocal) * RHS_H_yi2xj;
+        H_xj2xj{i} = LHS_H_yi2xj * invSE(RHS_H_yi2xj,fastLocal);
     end
 
     % Calculate mean
     % NOTE: For low error, these matrices should be very close to the identity
-    muH_yi2yi = meanSE(H_yi2yi,ZERO);
-    muH_xj2xj = meanSE(H_xj2xj,ZERO);
+    muH_yi2yi = meanSE(H_yi2yi,ZERO,fastLocal);
+    muH_xj2xj = meanSE(H_xj2xj,ZERO,fastLocal);
     % Calculate covariance
     % NOTE: For low error, these matrices should contain all values near zero
-    SigmaH_yi2yi = covSE(H_yi2yi,muH_yi2yi,ZERO);
-    SigmaH_xj2xj = covSE(H_xj2xj,muH_xj2xj,ZERO);
+    SigmaH_yi2yi = covSE(H_yi2yi,muH_yi2yi,ZERO,fastLocal);
+    SigmaH_xj2xj = covSE(H_xj2xj,muH_xj2xj,ZERO,fastLocal);
 end
 
 %% Package output
 if nargout > 2
     stats.muH_b2b = muH_bi2bi;
     stats.muH_a2a = muH_aj2aj;
-    stats.muH_y2y = muH_yi2yi;
-    stats.muH_x2x = muH_xj2xj;
     stats.SigmaH_b2b = SigmaH_bi2bi;
     stats.SigmaH_a2a = SigmaH_aj2aj;
+    stats.H_bi2bj = H_bi2bj;
+    stats.H_ai2aj = H_ai2aj;
+    
+    stats.muH_y2y = muH_yi2yi;
+    stats.muH_x2x = muH_xj2xj;
     stats.SigmaH_y2y = SigmaH_yi2yi;
     stats.SigmaH_x2x = SigmaH_xj2xj;
-
+    stats.H_yi2yj = H_yi2yj;
+    stats.H_xi2xj = H_xi2xj;
+    
     varargout{1} = stats;
 end
+
+%% Work in progress !!! 
