@@ -21,7 +21,7 @@ function muH = meanSE(H,varargin)
 %                    throwErr = [false] - Warn, but do not throw an error
 %       ZERO     - [OPTIONAL] positive value that is sufficiently close to 
 %                  zero or assumed zero (e.g. ZERO = 1e-8). If ZERO is not  
-%                  specified or ZERO = [], a default value is used.
+%                  specified or ZERO = 1e-8, a default value is used.
 %       METHOD   - [OPTIONAL] character array specifying method for 
 %                  calculating the mean.
 %                     'Coupled' - [DEFAULT] follows [1] finding the mean of 
@@ -67,7 +67,7 @@ end
 
 % Set defaults
 throwErr = false;
-ZERO = [];
+ZERO = 1e-8;
 METHOD = 'Coupled';
 
 % Parse ZERO and "fast" values
