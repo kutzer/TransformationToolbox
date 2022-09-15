@@ -32,6 +32,7 @@ function [bin,msg] = isSE(M,ZERO)
 %   18Nov2021 - Updated to check last row for [0,...,0,1]
 %   18Nov2021 - Added optional ZERO input
 %   18Nov2021 - Updated documentation
+%   15Sep2021 - Account for NxN where N < 3
 
 %% Check input(s)
 narginchk(1,2);
@@ -47,6 +48,12 @@ if numel(d) ~= 2 || (d(1) ~= d(2))
     return
 end
 n = d(1);
+
+if n < 3
+    msg = 'Matrix must be at least 3x3.';
+    bin = false;
+    return
+end
 
 %% Check if matrix is real
 if ~isreal(M)
