@@ -1,4 +1,4 @@
-function [q_Des,q_Init] = numericIkin(fkin,J_e,H_eDes2o,q_Init,s,delta_q_min)
+function [q_Des,q_Init,info] = numericIkin(fkin,J_e,H_eDes2o,q_Init,s,delta_q_min)
 % NUMERICIKIN solves the inverse kinematics problem numerically
 %   q_Des = numericIkin(fkin,J_e,H_eDes2o,q_Init)
 %
@@ -10,7 +10,11 @@ function [q_Des,q_Init] = numericIkin(fkin,J_e,H_eDes2o,q_Init,s,delta_q_min)
 %
 %   Input(s)
 %       fkin        - anonymous forward kinematics function
-%       J_e         - anonymous body-fixed Jacobian function
+%       J_e         - anonymous body-referenced (e.g. end-effector 
+%                     referenced) Jacobian function with a 
+%                     rotation/translation ordering.
+%           \dot{V} = J_e(q) \dot{q}
+%           \dot{V} = [\dot{k}; \dot{X}]
 %       H_eDes2o    - desired end-effector pose
 %       q_Init      - Nx1 array describing initial joint configuration
 %       s           - [OPTIONAL] scalar step size parameter (rad)
@@ -21,7 +25,16 @@ function [q_Des,q_Init] = numericIkin(fkin,J_e,H_eDes2o,q_Init,s,delta_q_min)
 %       q_Init - joint configuration used to initialize inverse kinematics
 %                solution. This value may differ from the supplied q_Now
 %                value if a new 
+%       info   - structured array describing inverse kinematic solution
+%           info.isRand - logical scalar indicating whether a random
+%                         configuration was used  
+%           info.q_Init - user specified q_Init
+%           info.q_Rand - randomly re-specified q_Init
+%
 %   M. Kutzer, 02Mar2022, USNA
+
+% Update(s)
+%   19Sep2022 - Updated documentation & added "info" output
 
 debug = false;
 
@@ -66,6 +79,11 @@ if N ~= numel(q_Init)
     error('Jacobian is %dx%d, but the specified joint configuration is %d.',...
         M,N,numel(q_Init));
 end
+
+%% Initialize "info" output
+info.isRand = false;
+info.q_Init = q_Init;
+info.q_Rand = q_Init;
 
 %% Move the arm to the desired configuration
 % Define initial joint configuration
@@ -148,6 +166,9 @@ while true
 
         % Update initial joint configuration
         q_Init = q_Now;
+        % Update info output
+        info.isRand = true;
+        info.q_Rand = q_Init;
 
         % ---- Display debug information ----------------------------------
         if debug
