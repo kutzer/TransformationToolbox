@@ -181,7 +181,8 @@ while true
             info.q_Rand = q_Init;
             % Define q_Des
             q_Des = nan(size(q_Now));
-
+            % 
+            fprintf('Oscillations detected, waypoint skipped\n');
             return
         end
 
