@@ -182,7 +182,7 @@ while true
             % Define q_Des
             q_Des = nan(size(q_Now));
             % 
-            fprintf('Oscillations detected, waypoint skipped\n');
+            fprintf('Cannot achieve waypoint from initial configuration\n');
             return
         end
 
