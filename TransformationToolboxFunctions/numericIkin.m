@@ -1,4 +1,4 @@
-function [q_Des,q_Init,info] = numericIkin(fkin,J_e,H_eDes2o,q_Init,s,delta_q_min)
+function [q_Des,q_Init,info] = numericIkin(fkin,J_e,H_eDes2o,q_Init,s,delta_q_min,skipRandom)
 % NUMERICIKIN solves the inverse kinematics problem numerically
 %   q_Des = numericIkin(fkin,J_e,H_eDes2o,q_Init)
 %
@@ -17,8 +17,19 @@ function [q_Des,q_Init,info] = numericIkin(fkin,J_e,H_eDes2o,q_Init,s,delta_q_mi
 %           \dot{V} = [\dot{k}; \dot{X}]
 %       H_eDes2o    - desired end-effector pose
 %       q_Init      - Nx1 array describing initial joint configuration
-%       s           - [OPTIONAL] scalar step size parameter (rad)
-%       delta_q_min - [OPTIONAL] scalar minimum change in q (rad)
+%       s           - [OPTIONAL] scalar step size parameter (rad *assuming 
+%                     all revolute joints). Specify s = [] to use default
+%                     value.
+%       delta_q_min - [OPTIONAL] scalar minimum change in q (rad *assuming 
+%                     all revolute joints). Specify delta_q_min = [] to use 
+%                     default value.
+%       skipRandom  - [OPTIONAL] scalar logical value used to specify
+%                     whether or not to skip finding an inverse kinematic
+%                     solution requiring a random q_Init.
+%                   true - return if a random q_Init is required, q_Des is
+%                          returned as an Mx1 NaN array.
+%                [false] - use random q_Init until a inverse kinematic
+%                          solution is found.
 %
 %   Output(s)
 %       q_Des  - joint configuration associated with H_eDes2o
@@ -35,13 +46,18 @@ function [q_Des,q_Init,info] = numericIkin(fkin,J_e,H_eDes2o,q_Init,s,delta_q_mi
 
 % Update(s)
 %   19Sep2022 - Updated documentation & added "info" output
+%   20Sep2022 - Added "skipRandom" input
 
 debug = false;
 
 %% Check input(s)
-narginchk(4,6)
+narginchk(4,7)
 
-if nargin < 6
+if nargin < 7
+    skipRandom = false;
+end
+
+if nargin < 6 || isempty(delta_q_min)
     delta_q_min = deg2rad(0.01);
 end
 
@@ -157,6 +173,17 @@ while true
             fprintf(']\n');
         end
         % -----------------------------------------------------------------
+        
+        % Skip if skipRandom is true
+        if skipRandom
+            % Update info output
+            info.isRand = true;
+            info.q_Rand = q_Init;
+            % Define q_Des
+            q_Des = nan(size(q_Now));
+
+            return
+        end
 
         % Initialize new joint configuration
         % NOTE: There are more robust ways to choose a new initial joint
@@ -166,6 +193,7 @@ while true
 
         % Update initial joint configuration
         q_Init = q_Now;
+        
         % Update info output
         info.isRand = true;
         info.q_Rand = q_Init;
