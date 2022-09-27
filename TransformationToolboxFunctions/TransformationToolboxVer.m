@@ -39,11 +39,12 @@ function varargout = TransformationToolboxVer
 %   02Sep2022 - Removed SE(3) assumption and added coupled/decoupled
 %               options to meanSE
 %   07Sep2022 - Updated covSE, veeSE, invSE, etc to create common approach
+%   27Sep2022 - Added multiviewPointsToWorld
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.17';
+A.Version = '1.1.18';
 A.Release = '(R2019b)';
-A.Date = '07-Sep-2022';
+A.Date = '27-Sep-2022';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
