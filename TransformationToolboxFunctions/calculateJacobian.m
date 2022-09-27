@@ -41,6 +41,8 @@ function funcJ = calculateJacobian(q,H_e2o,varargin)
 %
 %   M. Kutzer 10Oct2014, USNA
 
+% TODO - Add coupled/decoupled Jacobian option! 
+
 % Updates:
 %   09Nov2021 - Updated documentation
 %   23Feb2022 - Revised to correctly differentiate between body/world
