@@ -235,7 +235,7 @@ for i = 1:N
 end
 
 %% Combine points using mean
-p_w = mean(reshape(cell2mat(p_w_i),N*(K+2),M), 2);
+p_w = mean(reshape(cell2mat(p_w_i),M*(K+2),N), 2);
 p_w = reshape(p_w,K+2,M);
 p_w(end,:) = [];    % Remove row of ones
 
