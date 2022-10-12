@@ -1,22 +1,33 @@
 function [v_close,v_sort,nv_sort] = findClosestVector(v_all,v)
 % FINDCLOSESTVECTOR finds the vector in a set closest to a reference 
 % vector. Closest is defined in terms of the Euclidean norm.
-%   v_close = FINDCLOSESTVECTOR(v_all,v) finds the vector in a set (v_all)
-%   closest to a reference vector (v). If multiple vectors are found with 
-%   the same overall distance from the desired vector, the first is 
-%   returned.
+%   v_close = FINDCLOSESTVECTOR(v_all,v)
+%
+%   [v_close, v_sort] = FINDCLOSESTVECTOR(___)
+%
+%   [v_close,v_sort,nv_sort] = FINDCLOSESTVECTOR(___)
+%
+%   [v_close,v_sort,nv_sort,idx_sort] = FINDCLOSESTVECTOR(___)
+%
+%   Input(s)
 %       v_all   - NxM array containing M Nx1 vectors
 %       v       - Nx1 vector
-%       v_close - Nx1 vector closest to v (per the Euclidean norm)
 %
-%   [v_close, v_sort] = FINDCLOSESTVECTOR(v_all,v) returns the closest
-%   vector and all vectors from the original set, sorted from closest to
-%   furthest. 
-%
-%   [v_close,v_sort,nv_sort] = FINDCLOSESTVECTOR(v_all,v) also returns the
-%   sorted set of difference norms.
+%   Output(s)
+%       v_close - Nx1 vector closest to v (per the Euclidean norm). If 
+%                 multiple vectors are found with the same overall distance
+%                 from the desired vector, the first is returned.
+%       v_sort  - NxM array containing M Nx1 vectors sorted by Euclidean
+%                 distance (shortest to closest)
+%       nv_sort - 1xM array providing the Euclidean norm of the difference
+%                 |v_all - v|
+%       idx_sort - 1xM array containing the sorting index such that
+%                  v_sort = v_all(:,idx_sort)
 %
 %   M. Kutzer, 15Dec2016, USNA
+
+% Updates:
+%   12Oct2022 - Added idx_sort as optional output and updated documentation
 
 %% Check inputs
 narginchk(2,2);
@@ -46,3 +57,4 @@ nv = sqrt( sum(dv.^2,1) );      % Find norm of difference
 
 v_close = v_all(:,idx(1));
 v_sort  = v_all(:,idx);
+idx_sort = idx;
