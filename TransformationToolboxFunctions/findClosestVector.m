@@ -1,4 +1,4 @@
-function [v_close,v_sort,nv_sort] = findClosestVector(v_all,v)
+function [v_close,v_sort,nv_sort,idx_sort] = findClosestVector(v_all,v)
 % FINDCLOSESTVECTOR finds the vector in a set closest to a reference 
 % vector. Closest is defined in terms of the Euclidean norm.
 %   v_close = FINDCLOSESTVECTOR(v_all,v)
