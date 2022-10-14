@@ -40,11 +40,12 @@ function varargout = TransformationToolboxVer
 %               options to meanSE
 %   07Sep2022 - Updated covSE, veeSE, invSE, etc to create common approach
 %   27Sep2022 - Added multiviewPointsToWorld
+%   14Oct2022 - Added writeArrayToFile and readArrayToFile
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.18';
+A.Version = '1.1.19';
 A.Release = '(R2019b)';
-A.Date = '27-Sep-2022';
+A.Date = '14-Oct-2022';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
