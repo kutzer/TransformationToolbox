@@ -1,2 +1,0 @@
-- SVD to make an approximate rotation into a rotation
-- Update logSO?
