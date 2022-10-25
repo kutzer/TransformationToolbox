@@ -41,11 +41,13 @@ function varargout = TransformationToolboxVer
 %   07Sep2022 - Updated covSE, veeSE, invSE, etc to create common approach
 %   27Sep2022 - Added multiviewPointsToWorld
 %   14Oct2022 - Added writeArrayToFile and readArrayToFile
+%   25Oct2022 - Preallocate memory and show waitbar for large data sets in 
+%               solveAXeqXBinSE
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.19';
+A.Version = '1.1.20';
 A.Release = '(R2019b)';
-A.Date = '14-Oct-2022';
+A.Date = '25-Oct-2022';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
