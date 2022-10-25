@@ -112,7 +112,7 @@ function [H_b2a,H_y2x,varargout] = solveFixedTransforms(H_x2a,H_y2b,varargin)
 
 % Update(s)
 %   09Sep2022 - Updated to use parseVarargin_ZERO_fast
-
+%   25Oct2022 - Updated documentation
 
 %% Default options
 ZERO = 1e-8;
