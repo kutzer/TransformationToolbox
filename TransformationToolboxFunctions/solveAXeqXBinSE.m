@@ -82,6 +82,7 @@ if ~fast
 end
 
 %% Calculate M to solve for R_X
+
 % Define dimensions
 n = size(A{1},1);
 
@@ -90,6 +91,21 @@ M = zeros(n-1,n-1);
 
 fastLocal = true;
 k = numel(A);
+
+% Provide status for large sets of data
+if k >= 10000
+    tfStatus = true;
+    nStatus = 50;
+    iStatus = unique( round(linspace(1,k,nStatus)) );
+    msg = 'Solving AX=XB rotation...';
+    wb = waitbar(0,msg,'Name','solveAXeqXB.m');
+    dt_Status = now;
+    t0_Status = tic;
+else
+    tfStatus = false;
+end
+
+% Solve rotation
 for i = 1:k
     % Calculate vectorized forms of so
     R_Ai = A{i}(1:(n-1),1:(n-1));    % ith rotation for A
@@ -101,13 +117,42 @@ for i = 1:k
     
     % Update M (page 720)
     M = M + b*a.';
+
+    % Update status
+    if tfStatus
+        if any(i == iStatus)
+            prc = i/k;
+            ti_Status = toc(t0_Status);
+            tf_Status = (1-prc)*ti_Status/prc;
+            msg_i = sprintf('~ %d seconds remaining',round(tf_Status));
+            waitbar(prc,wb,{msg,msg_i});
+            drawnow;
+        end
+    end
 end
+
 % Solve for rotation (page 720)
 R_X = ( ( (M.')*M )^(-1/2) )*(M.');
 
+% Delete status waitbar
+if tfStatus
+    delete(wb);
+    drawnow
+end
+
 %% Calculate C and d to solve for translation b_X
-C = [];
-d = [];
+
+if tfStatus
+    msg = 'Solving AX=XB translation...';
+    wb = waitbar(0,msg,'Name','solveAXeqXB.m');
+    dt_Status = now;
+    t0_Status = tic;
+end
+
+%C = [];
+%d = [];
+C = zeros(k*(n-1),(n-1));
+d = zeros(k*(n-1),1);
 for i = 1:k
     % Isolate Rotation of A
     R_Ai = A{i}(1:(n-1),1:(n-1));
@@ -121,12 +166,31 @@ for i = 1:k
     di = b_Ai - R_X*b_Bi;
     
     % Compile C and d
-    C = [C; Ci];
-    d = [d; di];
+    %C = [C; Ci];
+    %d = [d; di];
+    C( ( (i-1)*(n-1)+(1:(n-1)) ),1:(n-1) ) = Ci;
+    d( ( (i-1)*(n-1)+(1:(n-1)) ),1       ) = di;
+
+    % Update status
+    if tfStatus
+        if any(i == iStatus)
+            prc = i/k;
+            ti_Status = toc(t0_Status);
+            tf_Status = (1-prc)*ti_Status/prc;
+            msg_i = sprintf('~ %d seconds remaining',round(tf_Status));
+            waitbar(prc,wb,{msg,msg_i});
+            drawnow;
+        end
+    end
 end
 % Solve for b_X (page 720)
 b_X = ( ((C.')*C)^(-1) )*(C.')*d;
 
+% Delete status waitbar
+if tfStatus
+    delete(wb);
+    drawnow;
+end
 %% Compile output
 X = eye(n);
 X(1:(n-1),1:(n-1)) = R_X;
