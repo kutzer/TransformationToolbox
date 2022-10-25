@@ -38,7 +38,7 @@ function [X,A,B] = solveAXeqXBinSE(A,B,varargin)
 
 % Update(s)
 %   09Sep2022 - Updated to use parseVarargin_ZERO_fast
-
+%   25Oct2022 - Preallocate C/d and show waitbar for large data sets
 %% Default options
 ZERO = [];
 fast = false;
