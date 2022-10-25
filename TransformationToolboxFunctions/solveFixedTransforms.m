@@ -7,6 +7,11 @@ function [H_b2a,H_y2x,varargout] = solveFixedTransforms(H_x2a,H_y2b,varargin)
 %
 %   [H_b2a,H_y2x] = SOLVEFIXEDTRANSFORMS(___,fast)
 %
+%   [H_b2a,H_y2x,stats] = SOLVEFIXEDTRANSFORMS(___)
+%
+%   NOTE: For large data sets, calculating the "stats" output will require
+%         additional computation time.
+%
 %   Input(s)
 %       H_x2a - n-element cell array containing unique elements of SE(N)
 %           H_x2a{i} - ith element of H_x2a
