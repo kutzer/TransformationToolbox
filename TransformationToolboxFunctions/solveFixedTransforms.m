@@ -67,6 +67,18 @@ function [H_b2a,H_y2x,varargout] = solveFixedTransforms(H_x2a,H_y2b,varargin)
 %       (3) Fixed Transformations - H_b2a and H_y2x must be fixed
 %           transformtaions
 %
+%   Suppressed Output Option:
+%       Syntax Example:
+%           [H_b2a,~,stats] = solveFixedTransforms(H_x2a,H_y2b)
+%       Description:
+%           For cases where only one of two fixed transformations is
+%           required, this function can use "detectOutputSuppression.m"
+%           To enable this feature, download detectOutputSuppression from
+%           the MathWorks File Exchange, and add the function location to
+%           your current path.
+%       Download Information: detectOutputSuppression, A. Danz
+%       https://www.mathworks.com/matlabcentral/fileexchange/79218-detectoutputsuppression
+%
 %   Example(s):
 %       % EXAMPLE 1 - MoCap/Manipulator Co-calibration --------------------
 %       %   Given:
@@ -113,6 +125,7 @@ function [H_b2a,H_y2x,varargout] = solveFixedTransforms(H_x2a,H_y2b,varargin)
 % Update(s)
 %   09Sep2022 - Updated to use parseVarargin_ZERO_fast
 %   25Oct2022 - Updated documentation
+%   27Oct2022 - Added surpressed output detection
 
 %% Default options
 ZERO = 1e-8;
@@ -142,6 +155,19 @@ n = n_x2a;
 [ZERO,fast,cellOut] = parseVarargin_ZERO_fast(varargin,ZERO,fast);
 
 % TODO - check cellOut values for unused terms
+
+%% Check for surpressed outputs using detectOutputSuppression.m
+if exist('detectOutputSuppression.m','file') == 2
+    % Function exists in the MATLAB path
+    tfTilde = detectOutputSuppression(nargout);
+else
+    % Function does not exist in the MATLAB path
+    tfTilde = false(1,nargout);
+end
+% Force 3-elment tfTilde
+if numel(tfTilde) < 3
+    tfTilde(3) = false;
+end
 
 %% Correct A/B pairs
 str = {'H_x2a','H_y2b'};
@@ -182,59 +208,63 @@ fastLocal = true;
 %
 %   Where H_bi2ai = H_bj2aj for all i,j
 
+if nargout > 0 && ~tfTilde(1)
+    % Initialize parameters
+    iter = 0;
+    nAB = (n^2 - n)/2;
+    A = cell(1,nAB);
+    B = cell(1,nAB);
 
-% Initialize parameters
-iter = 0;
-nAB = (n^2 - n)/2;
-A = cell(1,nAB);
-B = cell(1,nAB);
+    % Define i/j pairs
+    for i = 1:n
+        for j = 1:n
+            % Isolate unique, non-identity transformation pairs
+            %   We are keeping the upper-triangular portion of H_ai2aj and
+            %   H_bi2bj to avoid values equal to the identity, and values that
+            %   are the inverse of others.
+            if i ~= j && i < j
+                % H_ai2aj
+                H_x2ai = H_x2a{i};
+                H_x2aj = H_x2a{j};
+                H_ai2aj = H_x2aj * invSE(H_x2ai,fastLocal);
 
-% Define i/j pairs
-for i = 1:n
-    for j = 1:n
-        % Isolate unique, non-identity transformation pairs
-        %   We are keeping the upper-triangular portion of H_ai2aj and
-        %   H_bi2bj to avoid values equal to the identity, and values that
-        %   are the inverse of others.
-        if i ~= j && i < j
-            % H_ai2aj
-            H_x2ai = H_x2a{i};
-            H_x2aj = H_x2a{j};
-            H_ai2aj = H_x2aj * invSE(H_x2ai,fastLocal);
+                % H_bi2bj
+                H_y2bi = H_y2b{i};
+                H_y2bj = H_y2b{j};
+                H_bi2bj = H_y2bj * invSE(H_y2bi,fastLocal);
 
-            % H_bi2bj
-            H_y2bi = H_y2b{i};
-            H_y2bj = H_y2b{j};
-            H_bi2bj = H_y2bj * invSE(H_y2bi,fastLocal);
-
-            iter = iter+1;
-            A{iter} = H_ai2aj;
-            B{iter} = H_bi2bj;
+                iter = iter+1;
+                A{iter} = H_ai2aj;
+                B{iter} = H_bi2bj;
+            end
         end
     end
-end
-fprintf('Number of A/B pairs: %d\n',iter);
+    fprintf('Number of A/B pairs: %d\n',iter);
 
-% Solve A * X = X * B
-X = solveAXeqXBinSE(A,B,ZERO,fastLocal);
-H_b2a = X;
-[tf,msg] = isSE(H_b2a,ZERO);
-if ~tf
-    fprintf(...
-        ['Value calculated for H_b2a is not a valid element of SE(3):\n\n',...
-        '%s\nReplacing H_b2a with nearest element of SE(3).\n'],msg);
-    H_b2a = nearestSE(H_b2a);
-end
+    % Solve A * X = X * B
+    X = solveAXeqXBinSE(A,B,ZERO,fastLocal);
+    H_b2a = X;
+    [tf,msg] = isSE(H_b2a,ZERO);
+    if ~tf
+        fprintf(...
+            ['Value calculated for H_b2a is not a valid element of SE(3):\n\n',...
+            '%s\nReplacing H_b2a with nearest element of SE(3).\n'],msg);
+        H_b2a = nearestSE(H_b2a);
+    end
 
-% Rename A/B matrices for approximating error
-H_ai2aj = A;
-H_bi2bj = B;
+    % Rename A/B matrices for approximating error
+    H_ai2aj = A;
+    H_bi2bj = B;
+else
+    % Output surpressed
+    H_b2a = [];
+end
 
 %% Approximate H_b2a error
 %   H_ai2aj H_bi2ai = H_bj2aj H_bi2bj
 %       H_bi2aj     =     H_bi2aj
 
-if nargout > 2
+if nargout > 2 && ~tfTilde(1) && ~tfTilde(3)
     H_bi2ai = H_b2a;
     H_bj2aj = H_b2a;
     for i = 1:numel(H_ai2aj)
@@ -264,61 +294,66 @@ end
 %
 %   Where H_yi2xi = H_yj2xj for all i,j
 
-% Reinitialize parameters
-iter = 0;
-nAB = (n^2 - n)/2;
-A = cell(1,nAB);
-B = cell(1,nAB);
+if nargout > 1 && ~tfTilde(2)
+    % Reinitialize parameters
+    iter = 0;
+    nAB = (n^2 - n)/2;
+    A = cell(1,nAB);
+    B = cell(1,nAB);
 
-% Define i/j pairs
-for i = 1:n
-    for j = 1:n
-        % Isolate unique, non-identity transformation pairs
-        %   We are keeping the upper-triangular portion of H_ai2aj and
-        %   H_bi2bj to avoid values equal to the identity, and values that
-        %   are the inverse of others.
-        if i ~= j && i < j
-            % H_ai2aj
-            H_xi2a = H_x2a{i};
-            H_xj2a = H_x2a{j};
-            H_xi2xj = invSE(H_xj2a,fastLocal) * H_xi2a;
+    % Define i/j pairs
+    for i = 1:n
+        for j = 1:n
+            % Isolate unique, non-identity transformation pairs
+            %   We are keeping the upper-triangular portion of H_ai2aj and
+            %   H_bi2bj to avoid values equal to the identity, and values that
+            %   are the inverse of others.
+            if i ~= j && i < j
+                % H_ai2aj
+                H_xi2a = H_x2a{i};
+                H_xj2a = H_x2a{j};
+                H_xi2xj = invSE(H_xj2a,fastLocal) * H_xi2a;
 
-            % H_bi2bj
-            H_yi2b = H_y2b{i};
-            H_yj2b = H_y2b{j};
-            H_yi2yj = invSE(H_yj2b,fastLocal) * H_yi2b;
+                % H_bi2bj
+                H_yi2b = H_y2b{i};
+                H_yj2b = H_y2b{j};
+                H_yi2yj = invSE(H_yj2b,fastLocal) * H_yi2b;
 
-            iter = iter+1;
-            A{iter} = H_xi2xj;
-            B{iter} = H_yi2yj;
+                iter = iter+1;
+                A{iter} = H_xi2xj;
+                B{iter} = H_yi2yj;
+            end
         end
     end
-end
-fprintf('Number of A/B pairs: %d\n',iter);
+    fprintf('Number of A/B pairs: %d\n',iter);
 
-% Solve A * X = X * B
-X = solveAXeqXBinSE(A,B,ZERO,fastLocal);
-H_y2x = X;
-[tf,msg] = isSE(H_y2x,ZERO);
-if ~tf
-    fprintf(...
-        ['Value calculated for H_b2a is not a valid element of SE(3):\n\n',...
-        '%s\nReplacing H_b2a with nearest element of SE(3).\n'],msg);
-    H_y2x = nearestSE(H_y2x);
-end
+    % Solve A * X = X * B
+    X = solveAXeqXBinSE(A,B,ZERO,fastLocal);
+    H_y2x = X;
+    [tf,msg] = isSE(H_y2x,ZERO);
+    if ~tf
+        fprintf(...
+            ['Value calculated for H_b2a is not a valid element of SE(3):\n\n',...
+            '%s\nReplacing H_b2a with nearest element of SE(3).\n'],msg);
+        H_y2x = nearestSE(H_y2x);
+    end
 
-% Rename A/B matrices for approximating error
-H_xi2xj = A;
-H_yi2yj = B;
+    % Rename A/B matrices for approximating error
+    H_xi2xj = A;
+    H_yi2yj = B;
+else
+    % Output surpressed
+    H_y2x = [];
+end
 
 %% Approximate H_b2a error
 %   H_xi2xj H_yi2xi = H_yj2xj H_yi2yj
 %       H_yi2xj     =     H_yi2xj
 
-if nargout > 2
+if nargout > 2 && ~tfTilde(2) && ~tfTilde(3)
     H_yi2xi = H_y2x;
     H_yj2xj = H_y2x;
-    for i = 1:numel(H_ai2aj)
+    for i = 1:numel(H_xi2xj)
         LHS_H_yi2xj = H_xi2xj{i}*H_yi2xi;
         RHS_H_yi2xj = H_yj2xj*H_yi2yj{i};
 
@@ -337,22 +372,28 @@ if nargout > 2
 end
 
 %% Package output
-if nargout > 2
-    stats.muH_b2b = muH_bi2bi;
-    stats.muH_a2a = muH_aj2aj;
-    stats.SigmaH_b2b = SigmaH_bi2bi;
-    stats.SigmaH_a2a = SigmaH_aj2aj;
-    stats.H_bi2bj = H_bi2bj;
-    stats.H_ai2aj = H_ai2aj;
-    
-    stats.muH_y2y = muH_yi2yi;
-    stats.muH_x2x = muH_xj2xj;
-    stats.SigmaH_y2y = SigmaH_yi2yi;
-    stats.SigmaH_x2x = SigmaH_xj2xj;
-    stats.H_yi2yj = H_yi2yj;
-    stats.H_xi2xj = H_xi2xj;
-    
+if nargout > 2 && ~tfTilde(3)
+    if ~tfTilde(1)
+        stats.muH_b2b = muH_bi2bi;
+        stats.muH_a2a = muH_aj2aj;
+        stats.SigmaH_b2b = SigmaH_bi2bi;
+        stats.SigmaH_a2a = SigmaH_aj2aj;
+        stats.H_bi2bj = H_bi2bj;
+        stats.H_ai2aj = H_ai2aj;
+    end
+
+    if ~tfTilde(2)
+        stats.muH_y2y = muH_yi2yi;
+        stats.muH_x2x = muH_xj2xj;
+        stats.SigmaH_y2y = SigmaH_yi2yi;
+        stats.SigmaH_x2x = SigmaH_xj2xj;
+        stats.H_yi2yj = H_yi2yj;
+        stats.H_xi2xj = H_xi2xj;
+    end
+
+    if tfTilde(1) && tfTilde(2)
+        stats = [];
+    end
+
     varargout{1} = stats;
 end
-
-%% Work in progress !!! 
