@@ -37,8 +37,8 @@ if delta <= 0
     error('delta must be specified as a positive scalar value.');
 end
 
-N = size(v0);
-if size(v0,1) ~= N || size(v1,1) ~= N
+N = numel(v0);
+if numel(v1) ~= N
     warning('Inputs v0 and v1 should be %dx1 arrays, output will be %dxM.',N,N);
 end
 
@@ -46,7 +46,7 @@ end
 v0 = reshape(v0,[],1);
 v1 = reshape(v1,[],1);
 
-dv = min( abs(v1 - v0) );
+dv = max( abs(v1 - v0) );
 
 interp_dv = 0:delta:dv;
 M = numel(interp_dv);
@@ -56,7 +56,6 @@ if interp_dv(end) < dv
 end
 
 %% Interpolate
-N = numel(v0);
 v_out = zeros(N,M);
 for k = 1:N
     v_out(k,:) = linspace(v0(k),v1(k),M);
