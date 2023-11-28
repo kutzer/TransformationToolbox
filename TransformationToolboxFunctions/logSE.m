@@ -30,6 +30,7 @@ function h = logSE(H,varargin)
 % Updates:
 %   06Sep2022 - Updated to include ZERO and fast optional inputs
 %   09Sep2022 - Updated to use parseVarargin_ZERO_fast
+%   28Nov2023 - Updated to include additional notes on left Jacobian
 
 %% Default options
 ZERO = 1e-8;
@@ -69,9 +70,24 @@ switch N
         else
             K = wedge(Axis);
             h(1:(N-1),1:(N-1)) = Angle*K;
+            % Original method
             J_L = eye((N-1)) +...
                 ( (1-cos(Angle))/Angle )*K +...
                 ( (Angle - sin(Angle))/Angle )*K^2;
+            % Alternative method
+            %   Note: 
+            %       Using this method does not provide the same result
+            %       logm! 
+            %
+            %   References:
+            %       [1] https://www.researchgate.net/publication/261711710_Computing_the_Logarithm_of_Homogenous_Matrices_in_SE3
+            %       [2] https://natanaso.github.io/ece276a2019/ref/ECE276A_12_SE3.pdf
+            %{
+            J_L = eye((N-1)) +...
+                ( (1-cos(Angle))/(Angle^2) )*K +...
+                ( (Angle - sin(Angle))/(Angle^3) )*K^2;
+            %}
+
             invJ_L = (J_L)^-1;
             h(1:(N-1),N) = invJ_L * d;
         end
