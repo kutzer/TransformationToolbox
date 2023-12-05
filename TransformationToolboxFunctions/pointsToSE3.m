@@ -56,12 +56,13 @@ function [H_q2p,err] = pointsToSE3(q,p)
 %
 %   See also findPointCorrespondence, invSE
 %
-%   (c) M. Kutzer 10July2015, USNA
+%   M. Kutzer 10July2015, USNA
 
 % Updates
 %   03Jan2017 - Updated to include automatic best fit selection.
 %   25Sep2020 - Updated to find nearest element of SE(3) when the defined
 %               value is incorrect.
+%   05Dec2022 - Removed (c) that was incorrectly used in documentation.
 
 %TODO - implement special cases 3.2.4 from [2]
 
@@ -91,7 +92,7 @@ p(:,j) = [];
 
 N = size(p,2);
 if size(p,2) < 4
-    warning('There must be at least 4 unoccluded corresponding points to calculated the relative rigid body motion.');
+    warning('There must be at least 4 unoccluded corresponding points to calculate the relative rigid body transformation.');
     H_q2p = [];
     err = inf;
     return
