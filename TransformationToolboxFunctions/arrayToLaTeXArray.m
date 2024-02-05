@@ -26,11 +26,14 @@ function str = arrayToLaTeXArray(M,dec,alignment)
 %           1.00520 & 0       \\ \n
 %           0       & 5.002.3'
 %
+%   See also sym2LaTeX
+%
 %   M. Kutzer, 27Oct2021, USNA
 
 % Updates
 %   11May2022 - Function completed
-
+%   05Feb2024 - Added check dec and alignment
+%   05Feb2024 - Added symbolic support
 %% Check input(s)
 narginchk(1,3);
 
@@ -43,15 +46,27 @@ if nargin < 2
 end
 
 % TODO - check M
-% TODO - check dec
-% TODO - check alignment (use contains)
+
+% Check dec
+if dec < 0 || numel(dec) ~= 1 || round(dec) ~= dec
+    error('Number of decimals must be a scalar integer that is greater than or equal to 0.');
+end
+
+% Check alignment (use contains)
+alignment = lower(alignment);
+supportedAlignment = {'l','c','r'};
+if ~any( matches(supportedAlignment,alignment) )
+    error('Alignment must be ''l'', ''c'', or ''r''');
+end
 
 %% Define decimal string
-maxVal = max(reshape(M,1,[]));
-nValsLHS = numel( num2str(round(maxVal)) );
-nValsRHS = dec;
-nVals = nValsLHS + nValsRHS + 2; % account for decimal and negative sign
-decStr = ['%',num2str(nVals),'.',num2str(dec),'f'];
+if ~strcmpi( class(M), 'sym')
+    maxVal = max(reshape(M,1,[]));
+    nValsLHS = numel( num2str(round(maxVal)) );
+    nValsRHS = dec;
+    nVals = nValsLHS + nValsRHS + 2; % account for decimal and negative sign
+    decStr = ['%',num2str(nVals),'.',num2str(dec),'f'];
+end
 
 %% Display array
 str = sprintf('\\left( \\begin{array}{%s}\n',repmat(alignment,1,size(M,2)));
@@ -61,9 +76,21 @@ for i = 1:size(M,1)
     end
     for j = 1:size(M,2)
         if j < size(M,2)
-            str = sprintf(['%s',decStr,' & '],str,M(i,j));
+            if ~strcmpi( class(M), 'sym')
+                % numeric inputs
+                str = sprintf(['%s',decStr,' & '],str,M(i,j));
+            else
+                % apply for symbolic inputs
+                str = sprintf('%s%s & ',str,sym2LaTeX(M(i,j),dec));
+            end
         else
-            str = sprintf(['%s',decStr],str,M(i,j));
+            if ~strcmpi( class(M), 'sym')
+                % numeric inputs
+                str = sprintf(['%s',decStr],str,M(i,j));
+            else
+                % apply for symbolic inputs
+                str = sprintf('%s%s',str,sym2LaTeX(M(i,j),dec));
+            end
         end
     end
 end
