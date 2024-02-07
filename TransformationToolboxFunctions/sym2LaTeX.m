@@ -20,7 +20,7 @@ function str = sym2LaTeX(val,dec)
 %           camel case text prior to the variable. For example:
 %               vecUnderlineB_To6 --> \vec{\underline{B}}^{6}
 %
-%   See also arrayToLaTeXArray
+%   See also array2LaTeXArray str2LaTeX
 %
 %   M. Kutzer, 05Feb2024, USNA
 
