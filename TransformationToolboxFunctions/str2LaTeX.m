@@ -19,12 +19,20 @@ function strTex = str2LaTeX(str)
 %           camel case text prior to the variable. For example:
 %               vecUnderlineB_To6 --> \vec{\underline{B}}^{6}
 %
+%   See also sym2LaTeX array2LaTeX
+%
 %   M. Kutzer, 07Feb2024, USNA
-
 
 % TODO - support partial derivatives
 % TODO - allow eta to be replaced
 % etc.
+
+%% Check input(s)
+% TODO - check inputs 
+
+%% Convert string
+% Initialize strTex
+strTex = str;
 
 % Replace known LaTeX math terms
 % -> Define term(s)
@@ -47,7 +55,7 @@ texTerm = {...
 %'\eta'}; % ----------------> eta is not currently supported.
 % -> Perform the replacements
 for i = 1:numel(texTerm)
-    str = strrep(str, symTerm{i}, texTerm{i});
+    strTex = strrep(strTex, symTerm{i}, texTerm{i});
 end
 
 % Replace superscript & subscript terms
@@ -56,7 +64,7 @@ pattern = '([A-Za-z\d]+)_([A-Za-z\d\*]+)To([A-Za-z\d\*]+)';
 % -> Define replacement
 replacement = '$1_{$2}^{$3}';
 % -> Perform the replacement using regular expression
-str = regexprep(str, pattern, replacement);
+strTex = regexprep(strTex, pattern, replacement);
 
 % Replace subscript only terms
 % -> Define the pattern
@@ -64,7 +72,7 @@ pattern = '([A-Za-z\d]+)_([A-Za-z\d]+)';
 % -> Define replacement
 replacement = '$1_{$2}';
 % -> Perform the replacement using regular expression
-str = regexprep(str, pattern, replacement);
+strTex = regexprep(strTex, pattern, replacement);
 
 % Replace superscript only terms
 % -> Define the pattern
@@ -72,7 +80,7 @@ pattern = '([A-Za-z\d]+)_To([A-Za-z\d\*]+)';
 % -> Define replacement
 replacement = '$1^{$2}';
 % -> Perform the replacement using regular expression
-str = regexprep(str, pattern, replacement);
+strTex = regexprep(strTex, pattern, replacement);
 
 % Replace specific modifier terms
 symTerm = {'vec','underline','bar','hat'};
@@ -82,7 +90,7 @@ for i = 1:numel(symTerm)
     % -> Define replacement
     replacement = '\\$1{$2}';
     % -> Perform the replacement using regular expression
-    str = regexprep(str, pattern, replacement);
+    strTex = regexprep(strTex, pattern, replacement);
 end
 
 % Account for special cases (sqrt)
@@ -93,7 +101,7 @@ pattern = '\((.*?)\)\^\(1/2\)';
 % -> Define the replacement
 replacement = '\\sqrt{$1}';
 % -> Perform the replacement using regular expression
-str = regexprep(str, pattern, replacement);
+strTex = regexprep(strTex, pattern, replacement);
 %}
 
 % Account for fractions (this should not be the case)
@@ -104,7 +112,7 @@ pattern = '([^/]+)/([^/]+)';
 % -> Define the replacement
 replacement = '\\frac{$1}{$2}';
 % -> Perform the replacement using regular expression
-str = regexprep(str, pattern, replacement);
+strTex = regexprep(strTex, pattern, replacement);
 %}
 
 % Replace remaining terms
@@ -114,5 +122,5 @@ symTerm = {'(',')','[',']'};
 texTerm = {'\left(','\right)','\left[','\right]'};
 % -> Perform the replacements
 for i = 1:numel(texTerm)
-    str = strrep(str, symTerm{i}, texTerm{i});
+    strTex = strrep(strTex, symTerm{i}, texTerm{i});
 end
