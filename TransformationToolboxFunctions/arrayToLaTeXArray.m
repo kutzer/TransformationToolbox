@@ -1,4 +1,4 @@
-function str = arrayToLaTeXArray(M,dec,alignment)
+function str = arrayToLaTeXArray(M,dec,lrc)
 % ARRAYTOLATEXARRAY creates a latex array string given a matrix and
 % specificied number decimal places
 %   str = arrayToLaTeXArray(M)
@@ -8,11 +8,11 @@ function str = arrayToLaTeXArray(M,dec,alignment)
 %    str = arrayToLaTeXArray(M,dec,alignment)
 %
 %   Input(s)
-%               M - nxm array containing numeric and/or symbolic values
-%             dec - [OPTIONAL] specifies the number of decimal places for
-%                   specified values. The default value for dec is 4.
-%       alignment - [OPTIONAL] specifies the alignment within the array
-%                   using an element of {'l',['c'],'r'}.
+%         M - nxm array containing numeric and/or symbolic values
+%       dec - [OPTIONAL] specifies the number of decimal places for
+%             specified values. The default value for dec is 4.
+%       lrc - [OPTIONAL] specifies the alignment within the array
+%             using an element of {'l',['c'],'r'}.
 %
 %   Output(s)
 %       str - string containing LaTeX array format
@@ -38,7 +38,7 @@ function str = arrayToLaTeXArray(M,dec,alignment)
 narginchk(1,3);
 
 if nargin < 3
-    alignment = 'c';
+    lrc = 'c';
 end
 
 if nargin < 2
@@ -53,9 +53,9 @@ if dec < 0 || numel(dec) ~= 1 || round(dec) ~= dec
 end
 
 % Check alignment (use contains)
-alignment = lower(alignment);
+lrc = lower(lrc);
 supportedAlignment = {'l','c','r'};
-if ~any( matches(supportedAlignment,alignment) )
+if ~any( matches(supportedAlignment,lrc) )
     error('Alignment must be ''l'', ''c'', or ''r''');
 end
 
@@ -69,7 +69,7 @@ if ~strcmpi( class(M), 'sym')
 end
 
 %% Display array
-str = sprintf('\\left( \\begin{array}{%s}\n',repmat(alignment,1,size(M,2)));
+str = sprintf('\\left( \\begin{array}{%s}\n',repmat(lrc,1,size(M,2)));
 for i = 1:size(M,1)
     if i > 1
         str = sprintf('%s \\\\\n',str);
