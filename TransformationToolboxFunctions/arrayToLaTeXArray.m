@@ -26,7 +26,7 @@ function str = arrayToLaTeXArray(M,dec,lrc)
 %           1.00520 & 0       \\ \n
 %           0       & 5.002.3'
 %
-%   See also sym2LaTeX
+%   See also array2LaTeX sym2LaTeX str2LaTeX
 %
 %   M. Kutzer, 27Oct2021, USNA
 
