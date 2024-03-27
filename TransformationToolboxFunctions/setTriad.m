@@ -46,9 +46,9 @@ for i = 1:numel(bin)
             case 'linewidth'
                 set(kAxes,varargin{j},varargin{j+1});
             case 'matrix'
-                set(h,varargin{j},varargin{j+1});
+                set(h(i),varargin{j},varargin{j+1});
             case 'parent'
-                set(h,varargin{j},varargin{j+1});
+                set(h(i),varargin{j},varargin{j+1});
             case 'scale'
                 s = varargin{j+1};
                 if numel(s) == 1
@@ -124,13 +124,17 @@ for i = 1:numel(bin)
                 for k = 1:numel(axislabels)
                     % Convert label to string argument
                     if ~ischar(axislabels{k})
-                        axislabels{i} = num2str(axislabels{k});
+                        axislabels{k} = num2str(axislabels{k});
                     end
-                    % Apply label
+                    % Get label position
                     xdata = get(kAxes(k),'XData');
                     ydata = get(kAxes(k),'YData');
                     zdata = get(kAxes(k),'ZData');
-                    txt(k) = text(xdata(end),ydata(end),zdata(end),axislabels{k});
+                    % Set label position
+                    set(txt(k),'Position',...
+                        [xdata(end),ydata(end),zdata(end)]);
+                    % Set label properties
+                    %{
                     set(txt(k),'Parent',h(i),...
                         'HorizontalAlignment','Left',...
                         'VerticalAlignment','Bottom',...
@@ -138,8 +142,20 @@ for i = 1:numel(bin)
                         'FontName','Helvetica',...
                         'FontSize',10,...
                         'Tag',axislabel_tags{k});
+                    %}
+                    set(txt(k),'Parent',h(i),...
+                        'HorizontalAlignment','Left',...
+                        'VerticalAlignment','Bottom',...
+                        'Tag',axislabel_tags{k});
                 end
             otherwise
+                % kAxesALL,kLabelsALL
+                if isprop(h(i),varargin{j})
+                    set(h(i),varargin{j},varargin{j+1});
+                elseif all(isprop(kAxes,varargin{j}),'all')
+                    set(kAxes,varargin{j},varargin{j+1});
+                elseif all(isprop(kLabel,varargin{j}),'all')
+                    set(kLabel,varargin{j},varargin{j+1});
                 % TODO - add check for properties in line or hgtransform, and
                 % update property accordingly.
                 warning(sprintf('Ignoring "%s," unexpected property.',varargin{j}));
