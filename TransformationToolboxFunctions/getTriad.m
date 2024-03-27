@@ -116,9 +116,13 @@ for i = 1:numel(varargin)
         case 'axislabels'
             prop{i} = axislabels;
         otherwise
-            try
+            if isprop(h,varargin{i})
                 prop{i} = get(h,varargin{i});
-            catch
+            elseif all(isprop(plt,varargin{i}),'all')
+                prop{i} = get(plt,varargin{i});
+            elseif all(isprop(txt,varargin{i}),'all')
+                prop{i} = get(txt,varargin{i});
+            else
                 warning('Property "%s" is not a valid property.',varargin{i});
                 prop{i} = [];
             end
