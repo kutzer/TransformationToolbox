@@ -3,7 +3,7 @@ function setTriad(h,varargin)
 %
 %   Properties:
 %       'linestyle' - [ {-} | -- | : | -. | none ]
-%       'linewidth' - Used to define thickness lines representing axes 
+%       'linewidth' - Used to define thickness lines representing axes
 %                     Default value is 0.50
 %                     Value must be finite and greater than zero
 %       'matrix'    - 4x4 homogenious transform
@@ -19,13 +19,13 @@ function setTriad(h,varargin)
 %                     This property hides the visualization, not the
 %                       hgtransform object.
 %
-%   See also triad isTriad getTriad showTriad hideTriad 
+%   See also triad isTriad getTriad showTriad hideTriad
 %
 %   M. Kutzer 19Dec2014, USNA
 
 % Updates:
-%   13Jul2020 - Corrected scaling update. 
-%   25Apr2022 - Added AxisLabels 
+%   13Jul2020 - Corrected scaling update.
+%   25Apr2022 - Added AxisLabels
 
 %% Get triad axes
 [bin,kAxesALL,kLabelsALL] = isTriad(h);
@@ -36,7 +36,7 @@ for i = 1:numel(bin)
         warning(sprintf('Index $d is not a valid triad.',i));
         continue
     end
-    
+
     kAxes = kAxesALL{i};
     kLabels = kLabelsALL{i};
     for j = 1:2:numel(varargin)
@@ -98,7 +98,7 @@ for i = 1:numel(bin)
                         otherwise
                             error('Something went wrong!');
                     end
-                end          
+                end
             case 'tag'
                 set(h,varargin{j},varargin{j+1});
             case 'visible'
@@ -111,7 +111,7 @@ for i = 1:numel(bin)
                 if ~iscell(axislabels)
                     error('Axis labels must be specified as a 1x3 cell array.');
                 end
-                
+
                 if isempty(kLabels)
                     for k = 1:numel(kAxes)
                         txt(k) = text('Parent',h(i));
@@ -119,7 +119,7 @@ for i = 1:numel(bin)
                 else
                     txt = kLabels;
                 end
-                
+
                 axislabel_tags = {'X-Label','Y-Label','Z-Label'};
                 for k = 1:numel(axislabels)
                     % Convert label to string argument
@@ -156,9 +156,11 @@ for i = 1:numel(bin)
                     set(kAxes,varargin{j},varargin{j+1});
                 elseif all(isprop(kLabel,varargin{j}),'all')
                     set(kLabel,varargin{j},varargin{j+1});
-                % TODO - add check for properties in line or hgtransform, and
-                % update property accordingly.
-                warning(sprintf('Ignoring "%s," unexpected property.',varargin{j}));
+                else
+                    % TODO - add check for properties in line or hgtransform, and
+                    % update property accordingly.
+                    warning(sprintf('Ignoring "%s," unexpected property.',varargin{j}));
+                end
         end
     end
 end
