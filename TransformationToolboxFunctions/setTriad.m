@@ -154,8 +154,8 @@ for i = 1:numel(bin)
                     set(h(i),varargin{j},varargin{j+1});
                 elseif all(isprop(kAxes,varargin{j}),'all')
                     set(kAxes,varargin{j},varargin{j+1});
-                elseif all(isprop(kLabel,varargin{j}),'all')
-                    set(kLabel,varargin{j},varargin{j+1});
+                elseif all(isprop(kLabels,varargin{j}),'all')
+                    set(kLabels,varargin{j},varargin{j+1});
                 else
                     % TODO - add check for properties in line or hgtransform, and
                     % update property accordingly.
