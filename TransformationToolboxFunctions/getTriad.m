@@ -114,7 +114,7 @@ for i = 1:numel(varargin)
         case 'color'
             prop{i} = color;
         case 'axislabels'
-            prop{i} = axislabels;
+            prop{i} = str;
         otherwise
             if isprop(h,varargin{i})
                 prop{i} = get(h,varargin{i});
