@@ -36,19 +36,20 @@ plt = findobj(h,'Parent',h,'Type','Line');
 tag_plt = get(plt,'Tag');
 tag_txt = get(txt,'Tag');
 
-lbls = {'X-Axis','Y-Axis','Z-Axis'};
+lbls_plt = {'X-Axis','Y-Axis','Z-Axis'};
+lbls_txt = {'X-Label','Y-Label','Z-Label'};
 
 tf_plt = false(1,3);
 idx_plt = zeros(1,3);
 tf_txt = false(1,3);
 idx_txt = zeros(1,3);
-for i = 1:numel(lbls)
-    tfMatch_plt = matches(tag_plt,lbls{i});
+for i = 1:numel(lbls_plt)
+    tfMatch_plt = matches(tag_plt,lbls_plt{i});
     switch nnz(tfMatch_plt)
         case 0
             % No axis line is associated
             error('No "%s" line object is associated with this hgtransform.',...
-                lbls{i});
+                lbls_plt{i});
         case 1
             % One axis is associated
             tf_plt(i) = true;
@@ -56,15 +57,15 @@ for i = 1:numel(lbls)
         otherwise
             % Multiple axis lines are associated
             error('Multiple "%s" line objects are associated with this hgtransform.',...
-                lbls{i});
+                lbls_plt{i});
     end
 
-    tfMatch_txt = matches(tag_txt,lbls{i});
+    tfMatch_txt = matches(tag_txt,lbls_txt{i});
     switch nnz(tfMatch_txt)
         case 0
             % No axis line is associated
             error('No "%s" text object is associated with this hgtransform.',...
-                lbls{i});
+                lbls_txt{i});
         case 1
             % One axis is associated
             tf_txt(i) = true;
@@ -72,7 +73,7 @@ for i = 1:numel(lbls)
         otherwise
             % Multiple axis lines are associated
             error('Multiple "%s" text objects are associated with this hgtransform.',...
-                lbls{i});
+                lbls_txt{i});
     end
 
 end
