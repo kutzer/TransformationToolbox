@@ -21,6 +21,8 @@ function prop = getTriad(h,varargin)
 %                     This property hides the visualization, not the
 %                       hgtransform object.
 %
+%   TODO - Finish documentation
+%
 %   M. Kutzer, 27Mar2024, USNA
 
 %% Check input(s)
@@ -75,22 +77,23 @@ for i = 1:numel(lbls)
 
 end
 
-if all(tf_plt,'all')
-    % Re-order line and text objects to x/y/z
-    plt = plt(idx_plt);
-    txt = txt(idx_txt);
+%if all(tf_plt,'all') && all(tf_txt,'all')
+% Re-order line and text objects to x/y/z
+plt = plt(idx_plt);
+txt = txt(idx_txt);
 
-    color = get(plt,'Color');
-    str = get(txt,'String');
-    for i = 1:numel(plt)
-        X(1,:) = get(plt(i),'XData');
-        X(2,:) = get(plt(i),'YData');
-        X(3,:) = get(plt(i),'ZData');
+color = get(plt,'Color');
+str = get(txt,'String');
+for i = 1:numel(plt)
+    % Recover scale
+    X(1,:) = get(plt(i),'XData');
+    X(2,:) = get(plt(i),'YData');
+    X(3,:) = get(plt(i),'ZData');
 
-        % TODO - check for 2 points
-        sc(i) = norm( diff(X,1,2) );
-    end
+    % TODO - check for 2 points
+    sc(i) = norm( diff(X,1,2) );
 end
+%end
 
 %% Recover properties
 for i = 1:numel(varargin)
@@ -105,4 +108,23 @@ for i = 1:numel(varargin)
     end
 
     switch lower(varargin{i})
-        case 'line'
+        case 'scale'
+            prop{i} = sc;
+        case 'color'
+            prop{i} = color;
+        case 'axislabels'
+            prop{i} = axislabels;
+        otherwise
+            try
+                prop{i} = get(h,varargin{i});
+            catch
+                warning('Property "%s" is not a valid property.',varargin{i});
+                prop{i} = [];
+            end
+    end
+end
+
+%% Isolate single property
+if numel(prop) == 1
+    prop = prop{1};
+end
