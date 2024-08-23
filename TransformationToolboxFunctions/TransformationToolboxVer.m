@@ -43,6 +43,7 @@ function varargout = TransformationToolboxVer
 %   14Oct2022 - Added writeArrayToFile and readArrayToFile
 %   25Oct2022 - Preallocate memory and show waitbar for large data sets in 
 %               solveAXeqXBinSE
+%   23Aug2024 - Improved triad support
 
 A.Name = 'Transformation Toolbox';
 A.Version = '1.1.20';
