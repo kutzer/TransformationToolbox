@@ -185,6 +185,15 @@ if ~isempty(axislabels)
         % Update axis label
         set(txt(i),'String',axislabels{i});
     end
+
+    % Update text position
+    for i = 1:numel(axislabel_tags)
+        % Apply label
+        xdata = get(kids(i),'XData');
+        ydata = get(kids(i),'YData');
+        zdata = get(kids(i),'ZData');
+        set(txt(i),'Position',[xdata(end),ydata(end),zdata(end)]);
+    end
 end
 
         
