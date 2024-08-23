@@ -53,6 +53,7 @@ function h = triad(varargin)
 %   22Jan2016 - Updated to correct "visible" property error
 %   03Feb2016 - Updated "see also"
 %   27Feb2016 - Updated to include TODO note
+%   23Aug2024 - Updated to enable broad set of properties
 
 % TODO - create a triad class
 %   Note: This is problematic as we use "triads" and hgtransforms
@@ -83,6 +84,23 @@ h = hgtransform('Parent',mom);
 kids(1) = plot3([0,1],[0,0],[0,0],'Color',[1,0,0],'Tag','X-Axis','Parent',h);
 kids(2) = plot3([0,0],[0,1],[0,0],'Color',[0,1,0],'Tag','Y-Axis','Parent',h);
 kids(3) = plot3([0,0],[0,0],[0,1],'Color',[0,0,1],'Tag','Z-Axis','Parent',h);
+
+%% Initialize axis labels
+axislabel_tags = {'X-Label','Y-Label','Z-Label'};
+for i = 1:numel(axislabel_tags)
+    % Apply label
+    xdata = get(kids(i),'XData');
+    ydata = get(kids(i),'YData');
+    zdata = get(kids(i),'ZData');
+    txt(i) = text(xdata(end),ydata(end),zdata(end),'');
+    set(txt(i),'Parent',h,...
+        'HorizontalAlignment','Left',...
+        'VerticalAlignment','Bottom',...
+        'Color',[0 0 0],...
+        'FontName','Helvetica',...
+        'FontSize',10,...
+        'Tag',axislabel_tags{i});
+end
 
 %% Update properties
 axislabels = [];
@@ -119,9 +137,32 @@ for i = 1:2:numel(varargin)
         case 'axislabels'
             axislabels = varargin{i+1};
         otherwise
-            % TODO - add check for properties in line or hgtransform, and
-            % update property accordingly.
-            warning(sprintf('Ignoring "%s," unexpected property.',varargin{i}));
+            tfValidProp = false;
+            try
+                set(h,varargin{i},varargin{i+1});
+                tfValidProp = true;
+            catch
+                % Ignore
+            end
+
+            try
+                set(kids,varargin{i},varargin{i+1});
+                tfValidProp = true;
+            catch
+                % Ignore
+            end
+
+            try
+                set(txt,varargin{i},varargin{i+1});
+                tfValidProp = true;
+            catch
+                % Ignore
+            end
+
+            if ~tfValidProp
+                % update property accordingly.
+                warning(sprintf('Ignoring "%s," unexpected property.',varargin{i}));
+            end
     end
 end
 
@@ -136,24 +177,13 @@ if ~isempty(axislabels)
 end
 
 if ~isempty(axislabels)
-    axislabel_tags = {'X-Label','Y-Label','Z-Label'};
     for i = 1:numel(axislabels)
         % Convert label to string argument
         if ~ischar(axislabels{i})
             axislabels{i} = num2str(axislabels{i});
         end
-        % Apply label
-        xdata = get(kids(i),'XData');
-        ydata = get(kids(i),'YData');
-        zdata = get(kids(i),'ZData');
-        txt(i) = text(xdata(end),ydata(end),zdata(end),axislabels{i});
-        set(txt(i),'Parent',h,...
-            'HorizontalAlignment','Left',...
-            'VerticalAlignment','Bottom',...
-            'Color',[0 0 0],...
-            'FontName','Helvetica',...
-            'FontSize',10,...
-            'Tag',axislabel_tags{i});
+        % Update axis label
+        set(txt(i),'String',axislabels{i});
     end
 end
 
