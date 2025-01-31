@@ -4,10 +4,10 @@ function [t_a2b,r_a2b] = parameterizeSE(H_a2b,method)
 %   [t_a2b,r_a2b] = parameterizeSE(H_a2b)
 %
 %   [t_a2b,r_a2b] = parameterizeSE(H_a2b,method)
-%   
+%
 %   Input(s)
 %       H_a2b  - M-element cell array containing elements of SE(N)
-%       method - [OPTIONAL] character or string argument defining method 
+%       method - [OPTIONAL] character or string argument defining method
 %                for pareterization
 %
 %   Output(s)
