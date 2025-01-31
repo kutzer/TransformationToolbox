@@ -63,7 +63,7 @@ end
 if numel(link) ~= 3
     error('Link must be a 3x1 array.');
 end
-link = reshape(jAxis,[],1);
+link = reshape(link,[],1);
 v_mag = norm(link);
 v_hat = link./v_mag;
 
