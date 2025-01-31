@@ -44,9 +44,10 @@ function varargout = TransformationToolboxVer
 %   25Oct2022 - Preallocate memory and show waitbar for large data sets in 
 %               solveAXeqXBinSE
 %   23Aug2024 - Improved triad support
+%   31Jan2025 - Added revolute and prismatic joint visualization
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.20';
+A.Version = '1.1.21';
 A.Release = '(R2019b)';
 A.Date = '25-Oct-2022';
 A.URLVer = 1;
