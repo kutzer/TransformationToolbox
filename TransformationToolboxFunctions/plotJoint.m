@@ -94,12 +94,32 @@ switch jType
         cyfit.Radius = 0.8*jScale/2;
 
         % Plot cylinder
-        [h,p] = plotCylinder(axs,cyfit);
+        [ptc_cy,plt_cy] = plotCylinder(axs,cyfit);
 
         % Create function
         fcn = @(theta) set(h_j2p,'Matrix',expm(wedgeSE([jAxis*theta; zeros(3,1)])));
     case 'prismatic'
+        % Define orientation
+        R = vectorToSO(jAxis,3);
+        
+        % Define cube
+        cufit.Center = zeros(3,1);
+        cufit.Rotation = R;
+        cufit.Dimension = jScale;
 
+        % Plot cube
+        ptc_cu = plotCylinder(axs,cufit);
+
+        % Define square
+        sqfit.Center = 1.1*jAxis*jScale;
+        sqfit.Rotation = R;
+        sqfit.Dimension = jScale;
+
+        % Plot square
+        ptc_sq = plotCylinder(axs,cufit);
+
+        % Create function
+        fcn = @(d) set(h_j2p,'Matrix',Tx(jAxis(1)*d)*Ty(jAxis(2)*d)*Tz(jAxis(3)*d));
     otherwise
         error('Joint type must be revolute or prismatic.');
 end
