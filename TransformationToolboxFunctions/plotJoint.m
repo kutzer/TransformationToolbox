@@ -95,6 +95,10 @@ switch jType
 
         % Plot cylinder
         [ptc_cy,plt_cy] = plotCylinder(axs,cyfit);
+        
+        % Adjust plot object settings
+        set(ptc_cy,'FaceColor','k','FaceAlpha',0.5,'EdgeColor','none');
+        set(plt_cy,'Color','k','LineWidth',2);
 
         % Create function
         fcn = @(theta) set(h_j2p,'Matrix',expm(wedgeSE([jAxis*theta; zeros(3,1)])));
@@ -108,7 +112,7 @@ switch jType
         cufit.Dimension = jScale;
 
         % Plot cube
-        ptc_cu = plotCylinder(axs,cufit);
+        ptc_cu = plotCube(axs,cufit);
 
         % Define square
         sqfit.Center = 1.1*jAxis*jScale;
@@ -116,7 +120,11 @@ switch jType
         sqfit.Dimension = jScale;
 
         % Plot square
-        ptc_sq = plotCylinder(axs,cufit);
+        ptc_sq = plotSquare(axs,sqfit);
+
+        % Adjust plot object settings
+        set(ptc_cu,'FaceColor','k','FaceAlpha',0.5,'EdgeColor','k','LineWidth',2);
+        set(ptc_sq,'FaceColor','k','FaceAlpha',0.5,'EdgeColor','k','LineWidth',2);
 
         % Create function
         fcn = @(d) set(h_j2p,'Matrix',Tx(jAxis(1)*d)*Ty(jAxis(2)*d)*Tz(jAxis(3)*d));
