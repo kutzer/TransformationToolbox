@@ -45,11 +45,12 @@ function varargout = TransformationToolboxVer
 %               solveAXeqXBinSE
 %   23Aug2024 - Improved triad support
 %   31Jan2025 - Added revolute and prismatic joint visualization
+%   02Apr2025 - Updated to make "bin" always logical in isSO and isSE
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.21';
+A.Version = '1.1.22';
 A.Release = '(R2019b)';
-A.Date = '25-Oct-2022';
+A.Date = '02-Apr-2025';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
