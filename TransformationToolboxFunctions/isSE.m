@@ -19,7 +19,7 @@ function [bin,msg] = isSE(M,ZERO)
 %              if ZERO = [], a default value is used.
 %
 %   Output(s)
-%       bin - binary value describing whether the matrix is an element of 
+%       bin - logical value describing whether the matrix is an element of 
 %             SE(N).
 %       msg - message describing property that is violated. This parameter
 %             is [] if bin is "true".
@@ -33,6 +33,7 @@ function [bin,msg] = isSE(M,ZERO)
 %   18Nov2021 - Added optional ZERO input
 %   18Nov2021 - Updated documentation
 %   15Sep2021 - Account for NxN where N < 3
+%   02Apr2025 - Updated to make "bin" always logical
 
 %% Check input(s)
 narginchk(1,2);
@@ -44,7 +45,7 @@ end
 d = size(M);
 if numel(d) ~= 2 || (d(1) ~= d(2))
     msg = 'Matrix is not NxN.';
-    bin = 0;
+    bin = false;
     return
 end
 n = d(1);
@@ -58,7 +59,7 @@ end
 %% Check if matrix is real
 if ~isreal(M)
     msg = 'Matrix is not real.';
-    bin = 0;
+    bin = false;
     return
 end
 
@@ -71,18 +72,18 @@ if ~isZero(v0,ZERO) || ~isZero(v1-1,ZERO)
         msg = sprintf('%s0, ',msg);
     end
     msg = sprintf('%s1].',msg);
-    bin = 0;
+    bin = false;
     return
 end
 
 
 %% Check rotation matrix
 [bin,msg] = isSO(M(1:n-1,1:n-1),ZERO);
-if bin == 0
+if ~bin
     msg = sprintf('Rotation %s',msg);
     return
 end
 
 %% Otherwise
-bin = 1;
+bin = true;
 msg = [];
