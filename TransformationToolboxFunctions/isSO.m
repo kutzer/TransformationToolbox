@@ -19,7 +19,7 @@ function [bin,msg] = isSO(M,ZERO)
 %              if ZERO = [], a default value is used.
 %
 %   Output(s)
-%       bin - binary value describing whether the matrix is an element of 
+%       bin - logical value describing whether the matrix is an element of 
 %             SO(N).
 %       msg - message describing property that is violated. This parameter
 %             is [] if bin is "true".
@@ -34,6 +34,7 @@ function [bin,msg] = isSO(M,ZERO)
 %   07Feb2018 - Updated to actively calculate ZERO based on test condition
 %   18Nov2021 - Added optional ZERO input
 %   18Nov2021 - Updated documentation
+%   02Apr2025 - Updated to make "bin" always logical
 
 %% Check input(s)
 narginchk(1,2);
@@ -48,7 +49,7 @@ ZERO_scale = 1e1;
 d = size(M);
 if numel(d) ~= 2 || (d(1) ~= d(2))
     msg = 'Matrix is not NxN.';
-    bin = 0;
+    bin = false;
     return
 end
 %n = d(1);
@@ -56,7 +57,7 @@ end
 %% Check if matrix is real
 if ~isreal(M)
     msg = 'Matrix is not real.';
-    bin = 0;
+    bin = false;
     return
 end
 
@@ -74,7 +75,7 @@ end
 
 if ~isZero(detM-1,ZERO_i)
     msg = sprintf('Matrix has a determinant of %.15f.',detM);
-    bin = 0;
+    bin = false;
     return
 end
     
@@ -93,7 +94,7 @@ end
 if ~isZero(I-eye(size(I)),ZERO_i)
     msg = sprintf('Matrix has columns/rows that are not mutually orthogonal.\n');
     msg = [msg,sprintf('\tConsider updating ZERO from %e to %e\n',ZERO_i,max(abs(reshape(I-eye(size(I)),1,[]))))];
-    bin = 0;
+    bin = false;
     for i = 1:size(I,1)
         for j = 1:size(I,2)
             msg = [msg,sprintf('\t\tI(%d,%d) = %.15f\n',i,j,I(i,j))];
@@ -119,10 +120,10 @@ if ~isZero(magM-ones(size(magM)),ZERO_i)
     for i = 1:numel(magM)
         msg = [msg,sprintf('\t|M(:,%d)| = %.15f\n',i,magM(i))];
     end
-    bin = 0;
+    bin = false;
     return
 end
 
 %% Otherwise
 msg = [];
-bin = 1;
+bin = true;
