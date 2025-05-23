@@ -1,4 +1,4 @@
-function installTransformationToolbox(replaceExisting)
+function installTransformationToolbox(replaceExisting,skipAdmin)
 % INSTALLTRANSFORMATIONTOOLBOX installs Transformation Toolbox for MATLAB.
 %   INSTALLTRANSFORMATIONTOOLBOX installs Transformation Toolbox into the following 
 %   locations:
