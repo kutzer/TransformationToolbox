@@ -283,6 +283,7 @@ function removePath(toolboxName,pName,inPath,isPath,isDelete)
 % Remove path
 if inPath
     rmpath(pName);
+    fprintf('%s path removed successfully:\n\t"%s"\n',toolboxName,pName);
 end
 % Remove folder
 if isPath && isDelete
