@@ -8,6 +8,8 @@ function [q_Des,q_Init,info] = numericIkin(fkin,J_e,H_eDes2o,q_Init,s,delta_q_mi
 %
 %   q_Des = numericIkin(fkin,J_e,H_eDes2o,q_Init,s,delta_q_min)
 %
+%   q_Des = numericIkin(fkin,J_e,H_eDes2o,q_Init,s,delta_q_min,skipRandom)
+%
 %   Input(s)
 %       fkin        - anonymous forward kinematics function
 %       J_e         - anonymous body-referenced (e.g. end-effector 
@@ -161,6 +163,12 @@ while true
     end
     % ---------------------------------------------------------------------
 
+    % Check if waypoint is achieved
+    if norm( delta_q,"inf" ) < delta_q_min
+        fprintf('Waypoint achieved\n');
+        break
+    end
+
     % Check for oscillations
     if inf_q_history < s && nnz(sgn_q_history) == 0
         % ---- Display debug information ----------------------------------
@@ -208,12 +216,6 @@ while true
             fprintf(']\n');
         end
         % -----------------------------------------------------------------
-    end
-
-    % Check if waypoint is achieved
-    if norm( delta_q,"inf" ) < delta_q_min
-        fprintf('Waypoint achieved\n');
-        break
     end
 
 end
