@@ -9,7 +9,7 @@ fig = figure;
 axs = axes('Parent',fig,'NextPlot','add','DataAspectRatio',[1 1 1]);
 view(axs,3);
 
-% Define scale 
+% Define scale
 sc = 0.5;
 
 % Define base frame
@@ -72,42 +72,198 @@ set(axs,'XLim',X_lims(1,:),'YLim',X_lims(2,:),'ZLim',X_lims(3,:),...
     'XLimMode','manual','YLimMode','manual','ZLimMode','manual');
 
 %% Create videos
-vid_3D = VideoWriter('RRR_3D.mp4','MPEG-4');
-vid_pZ = VideoWriter('RRR_topdnPln.mp4','MPEG-4');
-vid_nY = VideoWriter('RRR_manipPln.mp4','MPEG-4');
+fname_3D = 'RRR_3D';
+fname_pZ = 'RRR_topdnPln';
+fname_nY = 'RRR_manipPln';
+vid_3D = VideoWriter([fname_3D,'.mp4'],'MPEG-4');
+vid_pZ = VideoWriter([fname_pZ,'.mp4'],'MPEG-4');
+vid_nY = VideoWriter([fname_nY,'.mp4'],'MPEG-4');
 open(vid_3D);
 open(vid_pZ);
 open(vid_nY);
 
 %% Rotate and show views
+xx = {};
+x_m_star = [];
 for phi = linspace(0,360,120)
+    % Reset axes position
+    set(axs,'Position',[0,0,1,1]);
+
     % Move arm
     jnts( deg2rad([phi,15,15]) );
 
     % 3D view
     view(axs,3);
+    if numel(xx) < 1
+        xx{1}(1,:) = xlim(axs);
+        xx{1}(2,:) = ylim(axs);
+        xx{1}(3,:) = zlim(axs);
+    else
+        xlim(axs,xx{1}(1,:));
+        ylim(axs,xx{1}(2,:));
+        zlim(axs,xx{1}(3,:));
+    end
     drawnow
     frm = getframe(fig);
     writeVideo(vid_3D,frm);
 
-    % Negative y-axis view
-    H_J1to0 = get(h_J1to0,'Matrix');
-    view(axs,-H_J1to0(1:3,2));
-    drawnow
-    frm = getframe(fig);
-    writeVideo(vid_nY,frm);
-
-    % Positive z-axis view
+    % Positive z-axis view (Top-Down)
     H_J1to0 = get(h_J1to0,'Matrix');
     view(axs, H_J1to0(1:3,3));
+    if numel(xx) < 2
+        xx{2}(1,:) = xlim(axs);
+        xx{2}(2,:) = ylim(axs);
+        xx{2}(3,:) = zlim(axs);
+    else
+        xlim(axs,xx{2}(1,:));
+        ylim(axs,xx{2}(2,:));
+        zlim(axs,xx{2}(3,:));
+    end
     drawnow
     frm = getframe(fig);
     writeVideo(vid_pZ,frm);
+
+    % Negative y-axis view (Plane of the Manipulator
+    mag = 1;
+    while true
+        % Update axes position
+        set(axs,'Position',[((1-mag)/2)*ones(1,2), mag*ones(1,2)]);
+
+        H_J1to0 = get(h_J1to0,'Matrix');
+        view(axs,-H_J1to0(1:3,2));
+        if numel(xx) < 3
+            xx{3}(1,:) = xlim(axs);
+            xx{3}(2,:) = ylim(axs);
+            xx{3}(3,:) = zlim(axs);
+        else
+            xlim(axs,xx{3}(1,:));
+            ylim(axs,xx{3}(2,:));
+            zlim(axs,xx{3}(3,:));
+        end
+        %axis(axs,'tight');
+        drawnow
+        frm = getframe(fig);
+
+        % Process image
+        im = frm.cdata;
+        im = rgb2gray(im);
+
+        [~,x_m] = find(im==0);
+        x_m = max(x_m);
+
+        if isempty(x_m_star)
+            x_m_star = x_m;
+            break
+        end
+
+        if x_m == x_m_star
+            fprintf('%.3f\n',mag);
+            break
+        else
+            if mag == 1
+                fprintf('%03d, %03d: ',x_m_star,x_m);
+                mag = x_m_star/x_m;
+            end
+            %mag = x_m/x_m_star;
+            if x_m > x_m_star
+                mag = mag - 0.001;
+            else
+                mag = mag + 0.001;
+            end
+        end
+    end
+    writeVideo(vid_nY,frm);
+
 end
 
 close(vid_3D);
 close(vid_pZ);
 close(vid_nY);
+
+%% Take snapshots
+phi = 30;
+
+% Reset axes position
+set(axs,'Position',[0,0,1,1]);
+
+% Move arm
+jnts( deg2rad([phi,15,15]) );
+
+% 3D view
+view(axs,3);
+    xlim(axs,xx{1}(1,:));
+    ylim(axs,xx{1}(2,:));
+    zlim(axs,xx{1}(3,:));
+drawnow
+frm = getframe(fig);
+imwrite(frm.cdata,[fname_3D,'.png'],'png');
+
+% Positive z-axis view (Top-Down)
+H_J1to0 = get(h_J1to0,'Matrix');
+view(axs, H_J1to0(1:3,3));
+if numel(xx) < 2
+    xx{2}(1,:) = xlim(axs);
+    xx{2}(2,:) = ylim(axs);
+    xx{2}(3,:) = zlim(axs);
+else
+    xlim(axs,xx{2}(1,:));
+    ylim(axs,xx{2}(2,:));
+    zlim(axs,xx{2}(3,:));
+end
+drawnow
+frm = getframe(fig);
+imwrite(frm.cdata,[fname_pZ,'.png'],'png');
+
+% Negative y-axis view (Plane of the Manipulator
+mag = 1;
+while true
+    % Update axes position
+    set(axs,'Position',[((1-mag)/2)*ones(1,2), mag*ones(1,2)]);
+
+    H_J1to0 = get(h_J1to0,'Matrix');
+    view(axs,-H_J1to0(1:3,2));
+    if numel(xx) < 3
+        xx{3}(1,:) = xlim(axs);
+        xx{3}(2,:) = ylim(axs);
+        xx{3}(3,:) = zlim(axs);
+    else
+        xlim(axs,xx{3}(1,:));
+        ylim(axs,xx{3}(2,:));
+        zlim(axs,xx{3}(3,:));
+    end
+    %axis(axs,'tight');
+    drawnow
+    frm = getframe(fig);
+
+    % Process image
+    im = frm.cdata;
+    im = rgb2gray(im);
+
+    [~,x_m] = find(im==0);
+    x_m = max(x_m);
+
+    if isempty(x_m_star)
+        x_m_star = x_m;
+        break
+    end
+
+    if x_m == x_m_star
+        fprintf('%.3f\n',mag);
+        break
+    else
+        if mag == 1
+            fprintf('%03d, %03d: ',x_m_star,x_m);
+            mag = x_m_star/x_m;
+        end
+        %mag = x_m/x_m_star;
+        if x_m > x_m_star
+            mag = mag - 0.001;
+        else
+            mag = mag + 0.001;
+        end
+    end
+end
+imwrite(frm.cdata,[fname_nY,'.png'],'png');
 
 %% Internal functions
 % -> Combine joints
