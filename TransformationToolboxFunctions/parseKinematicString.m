@@ -45,8 +45,9 @@ narginchk(1,1);
 %% Convert input to character array
 kStr = char( kStr );
 
-%% Remove '*' instances
+%% Remove '*' instances and extra spaces
 kStr = strrep(kStr,'*','');
+kStr = strrep(kStr,' ','');
 
 %% Parse transforms
 % Regular Expression Breakdown:
