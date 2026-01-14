@@ -36,7 +36,7 @@ function [tform,arg,tformStr,argStr] = parseKinematicString(kStr)
 %
 %   M. Kutzer, 14Jan2026, USNA
 
-tfDebug = true;
+tfDebug = false;
 
 %% Check input(s)
 narginchk(1,1);
