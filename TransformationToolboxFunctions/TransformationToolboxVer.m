@@ -47,11 +47,12 @@ function varargout = TransformationToolboxVer
 %   31Jan2025 - Added revolute and prismatic joint visualization
 %   02Apr2025 - Updated to make "bin" always logical in isSO and isSE
 %   22May2025 - Updated for local user install
+%   14Jan2026 - Added parseKinematicString
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.23';
+A.Version = '1.1.24';
 A.Release = '(R2019b)';
-A.Date = '23-May-2025';
+A.Date = '14-Jan-2026';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
