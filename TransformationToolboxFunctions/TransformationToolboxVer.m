@@ -48,11 +48,12 @@ function varargout = TransformationToolboxVer
 %   02Apr2025 - Updated to make "bin" always logical in isSO and isSE
 %   22May2025 - Updated for local user install
 %   14Jan2026 - Added parseKinematicString
+%   02Feb2026 - Corrected plotLink function
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.24';
+A.Version = '1.1.25';
 A.Release = '(R2019b)';
-A.Date = '14-Jan-2026';
+A.Date = '02-Feb-2026';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
