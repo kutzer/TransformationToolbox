@@ -1,8 +1,12 @@
-function plt = plotLink(varargin)
+function varargout = plotLink(varargin)
 % PLOTLINK plots a rigid link along a designated direction
 %   plt = plotLink(link)
 %
+%   [h_l2p,plt] = plotLink(link)
+%
 %   plt = plotLink(link,offsets)
+%
+%   [h_l2p,plt] = plotLink(link,offsets)
 %
 %   ___ = plotLink(axs,___)
 %
@@ -13,11 +17,14 @@ function plt = plotLink(varargin)
 %                offsets for the link. Default value is offset = [0,0];
 %
 %   Output(s)
-%       h_j2p - hgtransform object defining the "joint frame" relative to
+%       h_l2p - hgtransform object defining the "link frame" relative to
 %               the parent frame.
-%       fcn   - anonymous function to rotate or translate the joint
+%       plt   - line object visualizing link
 %
 %   M. Kutzer, 31Jan2025, USNA
+
+% Updates
+%   02Feb2026 - Added hgtransform output and corrected documentation
 
 %% Check input(s)
 narginchk(1,3)
@@ -75,5 +82,16 @@ end
 %% Plot 
 X = [offset(1)*v_hat, (v_mag-offset(2))*v_hat];
 plt = plot3(X(1,:),X(2,:),X(3,:),'-k','LineWidth',2,'Parent',axs);
+
+if nargout <= 1
+    varargout{1} = plt;
+    return
+end
+
+%% Create frame
+h_l2p = hgtransform('Parent',axs,'Matrix',Tx(link(1))*Ty(link(2))*Tz(link(3)));
+
+varargout{1} = h_l2p;
+varargout{2} = plt;
 
 % TODO - check remaining inputs
