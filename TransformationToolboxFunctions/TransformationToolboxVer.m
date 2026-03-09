@@ -49,6 +49,7 @@ function varargout = TransformationToolboxVer
 %   22May2025 - Updated for local user install
 %   14Jan2026 - Added parseKinematicString
 %   02Feb2026 - Corrected plotLink function
+%   09Mar2026 - Updated numericIkin 
 
 A.Name = 'Transformation Toolbox';
 A.Version = '1.1.25';
