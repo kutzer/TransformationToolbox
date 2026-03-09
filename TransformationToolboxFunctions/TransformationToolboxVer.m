@@ -52,9 +52,9 @@ function varargout = TransformationToolboxVer
 %   09Mar2026 - Updated numericIkin 
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.25';
+A.Version = '1.1.26';
 A.Release = '(R2019b)';
-A.Date = '02-Feb-2026';
+A.Date = '09-Mar-2026';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
