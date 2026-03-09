@@ -49,6 +49,7 @@ function [q_Des,q_Init,info] = numericIkin(fkin,J_e,H_eDes2o,q_Init,s,delta_q_mi
 % Update(s)
 %   19Sep2022 - Updated documentation & added "info" output
 %   20Sep2022 - Added "skipRandom" input
+%   09Mar2026 - Removed "Waypoint achieved" display
 
 debug = false;
 
@@ -165,7 +166,7 @@ while true
 
     % Check if waypoint is achieved
     if norm( delta_q,"inf" ) < delta_q_min
-        fprintf('Waypoint achieved\n');
+        %fprintf('Waypoint achieved\n');
         break
     end
 
