@@ -1,5 +1,5 @@
 function H = Tx(d,dim)
-%Tx homogeneous translation along the z-axis
+%Tx homogeneous translation along the x-axis
 %   Tx(d) creates a 3D homogeneous transformation containing zero rotation 
 %   and a translation of magnitude d along the x-axis.
 %
@@ -12,6 +12,9 @@ function H = Tx(d,dim)
 %   See also Rx Ry Rz Ty Tz
 %
 %   M. Kutzer 20Oct2014, USNA
+
+% Update(s)
+%   14Apr2026 - Corrected documentation
 
 % Format enables use of symbolic variables
 
