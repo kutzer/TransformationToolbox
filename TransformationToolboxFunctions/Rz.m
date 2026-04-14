@@ -1,7 +1,8 @@
 function H = Rz(theta,dim)
 %Rz homogeneous rotation about the z-axis (radians)
 %   Rz(theta) creates a 3D homogeneous transformation containing a rotation
-%   of magnitude theta about the z-axis and a translation of zero. 
+%   of magnitude theta about the z-axis and a translation of zero.
+%
 %   NOTE: "theta" must be defined in radians.
 %
 %   Rz(theta,3) creates a 3D homogeneous transformation containing a 
