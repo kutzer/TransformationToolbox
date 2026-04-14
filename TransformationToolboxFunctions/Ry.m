@@ -2,6 +2,7 @@ function H = Ry(theta)
 %Ry homogeneous rotation about the y-axis (radians)
 %   Ry(theta) creates a 3D homogeneous transformation containing a rotation
 %   of magnitude theta about the y-axis and a translation of zero.
+%
 %   NOTE: "theta" must be defined in radians.
 %
 %   See also Rx Rz Tx Ty Tz vee wedge
