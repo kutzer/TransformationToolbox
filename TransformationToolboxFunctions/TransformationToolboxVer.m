@@ -50,11 +50,12 @@ function varargout = TransformationToolboxVer
 %   14Jan2026 - Added parseKinematicString
 %   02Feb2026 - Corrected plotLink function
 %   09Mar2026 - Updated numericIkin 
+%   14Apr2026 - Updated documentation
 
 A.Name = 'Transformation Toolbox';
-A.Version = '1.1.26';
+A.Version = '1.1.27';
 A.Release = '(R2019b)';
-A.Date = '09-Mar-2026';
+A.Date = '14-Apr-2026';
 A.URLVer = 1;
 
 msg{1} = sprintf('MATLAB %s Version: %s %s',A.Name, A.Version, A.Release);
